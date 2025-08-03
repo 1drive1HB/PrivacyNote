@@ -17,7 +17,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,11 +35,21 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Determine deploy path
+        id: pathcheck
+        run: |
+          if [ -f "${{ github.workspace }}/index.html" ]; then
+            echo "path=." >> $GITHUB_OUTPUT
+          elif [ -f "${{ github.workspace }}/src/index.html" ]; then
+            echo "path=src" >> $GITHUB_OUTPUT
+          else
+            echo "Error: index.html not found" >&2
+            exit 1
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Deploy from root if index.html exists there, otherwise from src
-          path: ${{ (github.workspace + '/index.html') && 'src' || '.' }}
+          path: ${{ steps.pathcheck.outputs.path }}
 
       - name: Deploy to GitHub Pages
         id: deployment

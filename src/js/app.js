@@ -1,47 +1,47 @@
-import { createNote } from './actions/noteActions.js'
+import { createNote } from './actions/noteActions.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Get DOM elements
-  const noteText = document.getElementById('noteText')
-  const createNoteBtn = document.getElementById('createNoteBtn')
-  const clearBtn = document.getElementById('clearBtn')
-  const linkContainer = document.getElementById('linkContainer')
-  const noteLink = document.getElementById('noteLink')
+  const noteText = document.getElementById('noteText');
+  const createNoteBtn = document.getElementById('createNoteBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const linkContainer = document.getElementById('linkContainer');
+  const noteLink = document.getElementById('noteLink');
 
   createNoteBtn.addEventListener('click', async () => {
     try {
-      const content = noteText.value
+      const content = noteText.value.trim();
       if (!content) {
-        alert('Please enter note content')
-        return
+        alert('Please enter note content');
+        return;
       }
 
-      // Create note with empty password and 24h expiration
-      const newNote = await createNote(content, '', 86400)
+      const newNote = await createNote(content, '', 86400);
       
-      // Generate correct URL - works for both local and production
-      const baseUrl = window.location.origin
-      const isLocal = window.location.href.includes('localhost') || 
-                      window.location.href.includes('127.0.0.1')
-      const pathPrefix = isLocal ? '/src/html' : '/html'
-      const url = `${baseUrl}${pathPrefix}/messageURL.html?id=${newNote.id}`
+      const isLocal = window.location.hostname === 'localhost' || 
+                      window.location.hostname === '127.0.0.1';
       
-      noteLink.textContent = url
-      linkContainer.classList.remove('hidden')
+      const url = isLocal
+        ? `${window.location.origin}/src/html/messageURL.html?id=${newNote.id}`
+        : `${window.location.origin}/PrivacyNote/html/messageURL.html?id=${newNote.id}`;
       
-      // Copy to clipboard functionality
-      noteLink.addEventListener('click', () => {
+      noteLink.textContent = url;
+      linkContainer.classList.remove('hidden');
+      
+      const copyHandler = () => {
         navigator.clipboard.writeText(url)
-        alert('Link copied to clipboard!')
-      })
+          .then(() => alert('Link copied to clipboard!'))
+          .catch(err => console.error('Copy failed:', err));
+      };
+      noteLink.addEventListener('click', copyHandler);
+      
     } catch (error) {
-      console.error('Error:', error)
-      alert(`Error: ${error.message}`)
+      console.error('Error creating note:', error);
+      alert(`Error: ${error.message}`);
     }
-  })
+  });
 
   clearBtn.addEventListener('click', () => {
-    noteText.value = ''
-    linkContainer.classList.add('hidden')
-  })
-})
+    noteText.value = '';
+    linkContainer.classList.add('hidden');
+  });
+});

@@ -19,6 +19,15 @@ NewPrivN/
         │   └── supabase.js
         ├── app.js
         └── config.js
-├── AI-instructions.md
 
+
+CREATE TABLE notes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  content TEXT NOT NULL,
+  is_encrypted BOOLEAN DEFAULT FALSE,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+// for now without rts and encryption
 

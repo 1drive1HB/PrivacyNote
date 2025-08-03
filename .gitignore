@@ -2,6 +2,7 @@
 .env
 .env.local
 public/env.js
+public/
 # Temporary files
 src/css/.ttt.md
 

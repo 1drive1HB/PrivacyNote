@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy Static Site to GitHub Pages
 
 on:
   push:
@@ -10,46 +10,37 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
   deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
-        
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-          
-      - name: Install dependencies
+
+      - name: Verify site structure
         run: |
-          python -m pip install --upgrade pip
-          pip install mkdocs  # Only if you need documentation
-          
-      - name: Build (if needed)
-        run: |
-          echo "No build step needed for static site"
-          # Add any build commands here if needed later
-          
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v3
-        with:
-          static_site_generator: "other"
-          
+          echo "Contents of repository:"
+          ls -R
+          echo "Checking for index.html..."
+          if [ ! -f "index.html" ] && [ ! -f "src/index.html" ]; then
+            echo "Error: Could not find index.html in root or src directory"
+            exit 1
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'  # Deploys the entire repository
-          
+          # Deploy from root if index.html exists there, otherwise from src
+          path: ${{ (github.workspace + '/index.html') && 'src' || '.' }}
+
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4

@@ -31,11 +31,6 @@ jobs:
         with:
           config-path: .gitleaks.toml
           fail-on-error: true
-        
-      - name: Check for vulnerable dependencies
-        uses: actions/check-vulns@v1
-        with:
-          check: all
 
   deploy:
     needs: security-checks

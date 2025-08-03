@@ -7,7 +7,7 @@
   <link rel="stylesheet" id="css-link">
 </head>
 <body>
-  <!-- <div class="container">
+  <div class="container">
     <header class="header">
       <img src="https://cdn-icons-png.flaticon.com/512/1803/1803612.png" alt="Logo" class="logo">
       <h1>Secret Note</h1>
@@ -22,16 +22,26 @@
   </div>
 
   <script type="module">
+    // Detect environment
     const isLocal = window.location.hostname === 'localhost' || 
                    window.location.hostname === '127.0.0.1';
+    const isGitHubPages = window.location.hostname.includes('github.io');
     
-    document.getElementById('css-link').href = isLocal ? 
-      '../css/styles.css' : '/PrivacyNote/src/css/styles.css';
+    // Set CSS path dynamically
+    const cssPath = isLocal ? '../src/css/styles.css' : 
+                   isGitHubPages ? '/PrivacyNote/src/css/styles.css' : './src/css/styles.css';
+    document.getElementById('css-link').href = cssPath;
 
     try {
-      const modulePath = isLocal ? 
-        '../js/actions/noteActions.js' : 
-        '/PrivacyNote/src/js/actions/noteActions.js';
+      // Set correct import path based on environment
+      let modulePath;
+      if (isLocal) {
+        modulePath = '../src/js/actions/noteActions.js';
+      } else if (isGitHubPages) {
+        modulePath = '/PrivacyNote/src/js/actions/noteActions.js';
+      } else {
+        modulePath = './src/js/actions/noteActions.js';
+      }
       
       const { getNote } = await import(modulePath);
       
@@ -47,7 +57,12 @@
       const el = document.getElementById('noteContent');
       el.textContent = 'Error: ' + error.message;
       el.style.color = 'red';
+      
+      // Also show error in error message div
+      const errorEl = document.getElementById('errorMessage');
+      errorEl.textContent = error.message;
+      errorEl.classList.remove('hidden');
     }
-  </script> -->
+  </script>
 </body>
 </html>

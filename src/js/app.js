@@ -1,47 +1,83 @@
 import { createNote } from './actions/noteActions.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const noteText = document.getElementById('noteText');
-  const createNoteBtn = document.getElementById('createNoteBtn');
-  const clearBtn = document.getElementById('clearBtn');
-  const linkContainer = document.getElementById('linkContainer');
-  const noteLink = document.getElementById('noteLink');
+  const elements = {
+    noteText: document.getElementById('noteText'),
+    createNoteBtn: document.getElementById('createNoteBtn'),
+    clearBtn: document.getElementById('clearBtn'),
+    linkContainer: document.getElementById('linkContainer'),
+    noteLink: document.getElementById('noteLink'),
+    copyFeedback: document.getElementById('copyFeedback')
+  };
 
-  createNoteBtn.addEventListener('click', async () => {
+  // Environment detection
+  const isLocal = window.location.hostname === 'localhost' || 
+                 window.location.hostname === '127.0.0.1';
+  const isGitHubPages = window.location.hostname.includes('github.io');
+  
+  // Base path configuration
+  const basePath = isGitHubPages ? '/PrivacyNote' : '';
+  const notePagePath = isLocal ? '/note.html' : `${basePath}/note`;
+
+  elements.createNoteBtn.addEventListener('click', async () => {
     try {
-      const content = noteText.value.trim();
+      const content = elements.noteText.value.trim();
       if (!content) {
-        alert('Please enter note content');
+        showFeedback('Please enter note content', 'error');
         return;
       }
 
+      // Disable button during creation
+      toggleButtonState(true, 'Creating...');
+
       const newNote = await createNote(content, '', 86400);
       
-      const isLocal = window.location.hostname === 'localhost' || 
-                      window.location.hostname === '127.0.0.1';
+      // Construct URL based on environment
+      const url = `${window.location.origin}${notePagePath}?id=${newNote.id}`;
       
-      const url = isLocal
-        ? `${window.location.origin}/src/html/messageURL.html?id=${newNote.id}`
-        : `${window.location.origin}/PrivacyNote/html/messageURL.html?id=${newNote.id}`;
+      elements.noteLink.textContent = url;
+      elements.linkContainer.classList.remove('hidden');
       
-      noteLink.textContent = url;
-      linkContainer.classList.remove('hidden');
-      
-      const copyHandler = () => {
-        navigator.clipboard.writeText(url)
-          .then(() => alert('Link copied to clipboard!'))
-          .catch(err => console.error('Copy failed:', err));
+      // Copy handler with better feedback
+      elements.noteLink.onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(url);
+          showFeedback('✅ Link copied to clipboard!', 'success');
+          elements.noteLink.classList.add('copied');
+          setTimeout(() => elements.noteLink.classList.remove('copied'), 1000);
+        } catch (err) {
+          console.error('Copy failed:', err);
+          showFeedback('❌ Failed to copy link', 'error');
+        }
       };
-      noteLink.addEventListener('click', copyHandler);
-      
+
+      showFeedback('Note created successfully!', 'success');
     } catch (error) {
       console.error('Error creating note:', error);
-      alert(`Error: ${error.message}`);
+      showFeedback(`Error: ${error.message}`, 'error');
+    } finally {
+      toggleButtonState(false, 'Create Note');
     }
   });
 
-  clearBtn.addEventListener('click', () => {
-    noteText.value = '';
-    linkContainer.classList.add('hidden');
+  elements.clearBtn.addEventListener('click', () => {
+    elements.noteText.value = '';
+    elements.linkContainer.classList.add('hidden');
+    hideFeedback();
   });
+
+  function toggleButtonState(disabled, text) {
+    elements.createNoteBtn.disabled = disabled;
+    elements.createNoteBtn.textContent = text;
+  }
+
+  function showFeedback(message, type) {
+    elements.copyFeedback.textContent = message;
+    elements.copyFeedback.className = `copy-feedback ${type} show`;
+    setTimeout(hideFeedback, 3000);
+  }
+
+  function hideFeedback() {
+    elements.copyFeedback.classList.remove('show');
+  }
 });

@@ -62,6 +62,8 @@ CREATE TABLE notes (
 3. Start a local server:
    ```bash
    python -m http.server 8080
+
+   http://127.0.0.1:8080/
    ```
 
 4. Open in browser: [http://localhost:8080](http://localhost:8080)

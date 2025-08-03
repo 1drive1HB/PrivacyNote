@@ -13,6 +13,22 @@ CREATE TABLE notes (
 -- Create index for better performance on expiration checks
 CREATE INDEX idx_notes_expires_at ON notes (expires_at);
 
+ALTER TABLE notes 
+ADD COLUMN active BOOLEAN DEFAULT TRUE,
+ADD COLUMN deleted_at TIMESTAMPTZ;
+
+-- Update the delete trigger to mark as inactive instead of deleting
+CREATE OR REPLACE FUNCTION soft_delete_expired_notes()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE notes 
+  SET active = FALSE, deleted_at = NOW() 
+  WHERE expires_at < NOW() OR id = NEW.id;
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+
 -- For immediate functionality (disable RLS for now)
 --ALTER TABLE notes DISABLE ROW LEVEL SECURITY;
 

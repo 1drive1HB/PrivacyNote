@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Secret Note</title>
   <link rel="stylesheet" id="css-link">
+  <style>
+    /* n Mobile Screenshot Protection */
+    body {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        overflow: hidden;
+        position: fixed;
+      }
+    }
+</style>
 </head>
 <body>
   <div class="container">

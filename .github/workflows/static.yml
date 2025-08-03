@@ -24,6 +24,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         
+      # New sensitive file check (added as first step)
+      - name: Check for protected files
+        continue-on-error: false
+        run: |
+          if [ -f .env ] || [ -f .env.local ] || [ -f public/env.js ]; then
+            echo "::error::Protected files (.env, .env.local, public/env.js) detected in commit!"
+            echo "These files should not be committed. Please remove them and try again."
+            exit 1
+          fi
+          echo "No protected files detected - proceeding with deployment"
+        
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:

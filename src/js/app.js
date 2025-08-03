@@ -1,5 +1,3 @@
-import { createNote } from './actions/noteActions.js';
-
 document.addEventListener('DOMContentLoaded', async () => {
   const elements = {
     noteText: document.getElementById('noteText'),
@@ -17,8 +15,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // Base path configuration
   const basePath = isGitHubPages ? '/PrivacyNote' : '';
-  const notePagePath = isLocal ? '/note.html' : `${basePath}/note`;
+  const notePagePath = `${basePath}/note.html`;
 
+  // Create Note button handler
   elements.createNoteBtn.addEventListener('click', async () => {
     try {
       const content = elements.noteText.value.trim();
@@ -27,39 +26,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      // Disable button during creation
       toggleButtonState(true, 'Creating...');
-
+      
+      const { createNote } = await import('./actions/noteActions.js');
       const newNote = await createNote(content, '', 86400);
       
-      // Construct URL based on environment
       const url = `${window.location.origin}${notePagePath}?id=${newNote.id}`;
       
       elements.noteLink.textContent = url;
       elements.linkContainer.classList.remove('hidden');
       
-      // Copy handler with better feedback
+      // Copy handler
       elements.noteLink.onclick = async () => {
         try {
           await navigator.clipboard.writeText(url);
-          showFeedback('✅ Link copied to clipboard!', 'success');
-          elements.noteLink.classList.add('copied');
-          setTimeout(() => elements.noteLink.classList.remove('copied'), 1000);
+          showFeedback('✅ Link copied!', 'success');
+          setTimeout(() => showFeedback('', ''), 2000);
         } catch (err) {
-          console.error('Copy failed:', err);
-          showFeedback('❌ Failed to copy link', 'error');
+          showFeedback('❌ Failed to copy', 'error');
         }
       };
 
-      showFeedback('Note created successfully!', 'success');
+      showFeedback('Note created!', 'success');
     } catch (error) {
-      console.error('Error creating note:', error);
       showFeedback(`Error: ${error.message}`, 'error');
     } finally {
       toggleButtonState(false, 'Create Note');
     }
   });
 
+  // Clear button handler
   elements.clearBtn.addEventListener('click', () => {
     elements.noteText.value = '';
     elements.linkContainer.classList.add('hidden');

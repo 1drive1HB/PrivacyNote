@@ -1,9 +1,9 @@
 # Secrets
-.env.local
 .env
-
+.env.local
+public/env.js
 # Temporary files
-src/css/ttt.md
+src/css/.ttt.md
 
 # System files
 .DS_Store

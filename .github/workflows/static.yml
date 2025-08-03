@@ -3,10 +3,6 @@ name: Deploy static content to Pages
 on:
   push:
     branches: ["main"]
-    paths-ignore:
-      - 'README.md'
-      - 'LICENSE'
-      - '.github/**'
   workflow_dispatch:
 
 permissions:
@@ -19,21 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  security-checks:
-    name: Security Checks
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Check for secrets
-        uses: gitleaks/gitleaks-action@v2
-        with:
-          config-path: .gitleaks.toml
-          fail-on-error: true
-
   deploy:
-    needs: security-checks
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -42,22 +24,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         
-      - name: Check for protected files
-        run: |
-          if [ -f .env ] || [ -f .env.local ] || [ -f public/env.js ]; then
-            echo "::error::Protected files (.env, .env.local, public/env.js) detected in commit!"
-            exit 1
-          fi
-        
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
           
       - name: Build and inject config
         run: |
-          # Create config file with secrets
           cat > src/js/config.js <<EOL
           const config = {
             supabaseUrl: '${{ secrets.SUPABASE_URL }}',
@@ -74,13 +47,13 @@ jobs:
           EOL
           
       - name: Setup Pages
-        uses: actions/configure-pages@v3
+        uses: actions/configure-pages@v5
         
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
           
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,11 @@
+# Environment variables
+.env.local
+
+# Temporary CSS file
+src/css/ttt.md
+
+# Standard ignores
+node_modules/
+.DS_Store
+dist/
+*.log

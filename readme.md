@@ -22,19 +22,3 @@ NewPrivN/
 ├── AI-instructions.md
 
 
-Github Repo:
-
-Cloudflare:
-
-CodeRabbit: 
-
-Gmail:
-errozico@gmail.com
-
-Supabase:
-errozico@gmail.com
-111errozico@gmail.com""A
-
-Db:
-PrivacyNote
-h8e133rLPv7iZDEjm8mMQiupkJOIr3lkkvkIsYoXXZjB14paqmT1jLjzm1laZfvs

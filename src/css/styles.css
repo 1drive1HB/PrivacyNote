@@ -323,3 +323,31 @@ button:disabled {
     color: #bee3f8;
   }
 }
+
+/* WhatsApp Share Styles */
+.whatsapp-share-container {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.whatsapp-btn {
+  background-color: #25D366;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  transition: background-color 0.3s;
+}
+
+.whatsapp-btn:hover {
+  background-color: #128C7E;
+}
+
+.whatsapp-icon {
+  vertical-align: middle;
+}

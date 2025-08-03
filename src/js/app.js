@@ -5,7 +5,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     clearBtn: document.getElementById('clearBtn'),
     linkContainer: document.getElementById('linkContainer'),
     noteLink: document.getElementById('noteLink'),
-    copyFeedback: document.getElementById('copyFeedback')
+    copyFeedback: document.getElementById('copyFeedback'),
+    whatsappShare: document.getElementById('whatsappShare') // Add this
   };
 
   // Environment detection
@@ -33,6 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       
       const url = `${window.location.origin}${notePagePath}?id=${newNote.id}`;
       
+      // Update UI
       elements.noteLink.textContent = url;
       elements.linkContainer.classList.remove('hidden');
       
@@ -47,6 +49,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       };
 
+      // WhatsApp Share functionality
+      setupWhatsAppShare(url);
+      
       showFeedback('Note created!', 'success');
     } catch (error) {
       showFeedback(`Error: ${error.message}`, 'error');
@@ -59,6 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   elements.clearBtn.addEventListener('click', () => {
     elements.noteText.value = '';
     elements.linkContainer.classList.add('hidden');
+    if (elements.whatsappShare) elements.whatsappShare.classList.add('hidden');
     hideFeedback();
   });
 
@@ -68,12 +74,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function showFeedback(message, type) {
-    elements.copyFeedback.textContent = message;
-    elements.copyFeedback.className = `copy-feedback ${type} show`;
-    setTimeout(hideFeedback, 3000);
+    if (elements.copyFeedback) {
+      elements.copyFeedback.textContent = message;
+      elements.copyFeedback.className = `copy-feedback ${type} show`;
+      setTimeout(hideFeedback, 3000);
+    }
   }
 
   function hideFeedback() {
-    elements.copyFeedback.classList.remove('show');
+    if (elements.copyFeedback) {
+      elements.copyFeedback.classList.remove('show');
+    }
+  }
+
+  // WhatsApp Share function
+  function setupWhatsAppShare(url) {
+    if (!elements.whatsappShare) return;
+    
+    elements.whatsappShare.classList.remove('hidden');
+    const whatsappBtn = document.getElementById('whatsappBtn');
+    
+    whatsappBtn.onclick = () => {
+      const message = `Check out this secret note: ${url}`;
+      const encodedMessage = encodeURIComponent(message);
+      
+      // Detect mobile devices
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // Use WhatsApp's direct deep link for mobile
+        window.open(`whatsapp://send?text=${encodedMessage}`, '_blank');
+      } else {
+        // Fallback for desktop
+        window.open(`https://web.whatsapp.com/send?text=${encodedMessage}`, '_blank');
+      }
+    };
   }
 });

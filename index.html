@@ -29,9 +29,13 @@
         <div id="copyFeedback" class="copy-feedback hidden"></div>
       </div>
 
-      <div id="whatsappShare" class="hidden">
+    <div id="whatsappShare" class="hidden whatsapp-share-container">
       <button id="whatsappBtn" class="whatsapp-btn">
-        <img src="whatsapp-icon.svg" alt="Share via WhatsApp" width="20" style="margin-right:8px">
+        <!-- Using WhatsApp's official icon from CDN -->
+        <img src="https://static.whatsapp.net/rsrc.php/v3/y7/r/DSxOAUB0raA.png" 
+            alt="WhatsApp" 
+            width="20"
+            class="whatsapp-icon">
         Share via WhatsApp
       </button>
     </div>
@@ -39,7 +43,7 @@
   </div>
 
   <script type="module" src="./src/js/app.js"></script>
-  <script src="./public/env.js"></script>
+  <!-- <script src="./public/env.js"></script> -->
   <!-- Add this right before closing </body> tag -->
 <script>
   // Load env.js only in production

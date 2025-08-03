@@ -1,15 +1,13 @@
-import { getSupabaseClient } from '../services/supabase'
-import { encryptData, decryptData } from './cryptoActions'
+import { getSupabaseClient } from '../services/supabase.js'
 
 export const createNote = async (content, password, expiresIn) => {
   const supabase = getSupabaseClient()
-  const encrypted = await encryptData(content, password)
   
   const { data, error } = await supabase
     .from('notes')
     .insert({
-      content: encrypted,
-      is_encrypted: !!password,
+      content: content, // No encryption for now
+      is_encrypted: false,
       expires_at: new Date(Date.now() + expiresIn * 1000).toISOString()
     })
     .select()
@@ -21,16 +19,18 @@ export const createNote = async (content, password, expiresIn) => {
 
 export const getNote = async (id, password) => {
   const supabase = getSupabaseClient()
+  
+  // Get the note
   const { data, error } = await supabase
     .from('notes')
     .select('*')
     .eq('id', id)
     .single()
 
-  if (error) throw new Error('Note not found')
+  if (error) throw new Error('Note not found or already read')
   
-  const decrypted = await decryptData(data.content, password)
+  // Delete the note after reading
   await supabase.from('notes').delete().eq('id', id)
   
-  return decrypted
+  return data.content
 }

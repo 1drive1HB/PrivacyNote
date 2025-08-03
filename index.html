@@ -1,54 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PrivacyNote</title>
-  <link rel="stylesheet" href="https://unpkg.com/nice-forms.css/nice-forms.css" />
-  <link rel="stylesheet" href="/src/css/styles.css" />
-  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1803/1803612.png" />
+  <link rel="stylesheet" href="src/css/styles.css">
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1803/1803612.png">
 </head>
-
 <body>
   <div class="container">
     <header class="header">
-      <img src="https://cdn-icons-png.flaticon.com/512/1803/1803612.png" alt="Logo" class="logo" />
+      <img src="https://cdn-icons-png.flaticon.com/512/1803/1803612.png" alt="Logo" class="logo">
       <h1>PrivacyNote</h1>
     </header>
 
-    <!-- CREATE NOTE SECTION -->
-    <section id="createNoteSection" aria-label="Create secret note">
+    <section id="createNoteSection">
       <label for="noteText">Write your secret note:</label>
-      <textarea id="noteText" placeholder="Type your secret here..." aria-required="true"></textarea>
+      <textarea id="noteText" placeholder="Type your secret here..."></textarea>
 
-      <label for="password">Password (optional):</label>
-      <input type="password" id="password" placeholder="Leave empty for no password" class="password-input" />
+      <!-- <label for="password">Password (optional):</label>
+      <input type="password" id="password" placeholder="Leave empty for no password" class="password-input">
 
       <label for="expire">Expiration time:</label>
-      <select id="expire" aria-label="Expiration time">
+      <select id="expire">
         <option value="3600">1 hour</option>
         <option value="86400" selected>24 hours</option>
         <option value="604800">7 days</option>
-      </select>
+      </select> -->
 
       <div class="buttons">
-        <button id="createNoteBtn" type="button">Create Note</button>
-        <button id="clearBtn" type="button">Clear</button>
+        <button id="createNoteBtn">Create Note</button>
+        <button id="clearBtn">Clear</button>
       </div>
 
-      <div id="linkContainer" class="hidden" aria-live="polite">
+      <div id="linkContainer" class="hidden">
         <strong>Your unique note link (click to copy):</strong>
-        <p id="noteLink" tabindex="0" role="button" aria-label="Copy note link to clipboard" title="Click to copy"></p>
+        <p id="noteLink"></p>
       </div>
-    </section>
-
-    <!-- READ NOTE SECTION -->
-    <section id="readNoteSection" class="hidden" aria-label="Read secret note">
-      <h2>Your Secret Note</h2>
-      <div id="readNote" tabindex="0"></div>
     </section>
   </div>
 
-  <script type="module" src="/src/js/app.js"></script>
+  <!-- Update script path -->
+<script type="module" src="./src/js/app.js"></script>
 </body>
 </html>

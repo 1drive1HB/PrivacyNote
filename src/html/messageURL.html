@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secret Note</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <img src="https://cdn-icons-png.flaticon.com/512/1803/1803612.png" alt="Logo" class="logo">
+      <h1>Secret Note</h1>
+    </header>
+
+    <section id="passwordSection" class="hidden">
+      <!-- We'll add password later -->
+    </section>
+
+    <section id="noteContentSection">
+      <div id="noteContent" class="note-content">Loading note...</div>
+      <p class="note-meta">This note will be destroyed after reading.</p>
+    </section>
+
+    <div id="errorMessage" class="error-message hidden"></div>
+  </div>
+
+  <script type="module">
+    import { getNote } from '../js/actions/noteActions.js'
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search)
+        const noteId = urlParams.get('id')
+        
+        if (!noteId) {
+          throw new Error('Invalid note URL - missing ID')
+        }
+
+        // Get note content (no password for now)
+        const content = await getNote(noteId, '')
+        
+        // Display content
+        document.getElementById('noteContent').textContent = content
+      } catch (error) {
+        console.error('Error:', error)
+        document.getElementById('noteContent').textContent = 'Error: ' + error.message
+        document.getElementById('noteContent').style.color = 'red'
+      }
+    })
+  </script>
+</body>
+</html>

@@ -19,7 +19,7 @@ NewPrivN/
         │   └── supabase.js
         ├── app.js
         └── config.js
-
+├── AI-instructions.md
 
 
 Github Repo:

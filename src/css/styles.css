@@ -95,7 +95,82 @@ button:hover {
   color: #1a53ff;
 }
 
+/* Message URL Page Specific Styles */
+.note-content {
+  white-space: pre-wrap;
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  border: 1px solid #e9ecef;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
 
+.note-meta {
+  color: #6c757d;
+  font-style: italic;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.error-message {
+  color: #dc3545;
+  background: #f8d7da;
+  padding: 0.75rem 1rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+  border: 1px solid #f5c6cb;
+  display: none;
+}
+
+.error-message.visible {
+  display: block;
+}
+
+#passwordSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+#passwordSection input {
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+}
+
+#passwordSection button {
+  padding: 0.75rem;
+  background: #28a745;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+#passwordSection button:hover {
+  background: #218838;
+  transform: translateY(-1px);
+}
+
+/* Responsive adjustments for message page */
+@media (max-width: 768px) {
+  .note-content {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+  
+  #passwordSection input,
+  #passwordSection button {
+    padding: 0.6rem;
+  }
+}
+
+/* Existing responsive styles */
 #readNoteSection {
   white-space: pre-wrap;
   font-size: 1.2rem;

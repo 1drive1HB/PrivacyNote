@@ -1,0 +1,56 @@
+name: Deploy Static Site to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify site structure
+        run: |
+          echo "Contents of repository:"
+          ls -R
+          echo "Checking for index.html..."
+          if [ ! -f "index.html" ] && [ ! -f "src/index.html" ]; then
+            echo "Error: Could not find index.html in root or src directory"
+            exit 1
+          fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Determine deploy path
+        id: pathcheck
+        run: |
+          if [ -f "${{ github.workspace }}/index.html" ]; then
+            echo "path=." >> $GITHUB_OUTPUT
+          elif [ -f "${{ github.workspace }}/src/index.html" ]; then
+            echo "path=src" >> $GITHUB_OUTPUT
+          else
+            echo "Error: index.html not found" >&2
+            exit 1
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.pathcheck.outputs.path }}
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

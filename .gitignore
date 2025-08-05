@@ -3,7 +3,7 @@
 env.local
 env.json
 public/env.js
-src/js/load-env.js
+#src/js/load-env.js
 public/
 private/
 

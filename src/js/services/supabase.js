@@ -7,9 +7,8 @@ export const getSupabaseClient = () => {
   if (!supabaseClient) {
     console.log('Initializing Supabase client...');
     
-    // Additional validation
     if (!config.supabaseUrl || !config.supabaseKey) {
-      const errorMsg = 'Missing Supabase configuration - check your config.js or environment variables';
+      const errorMsg = 'Missing Supabase configuration';
       console.error(errorMsg);
       throw new Error(errorMsg);
     }
@@ -19,12 +18,13 @@ export const getSupabaseClient = () => {
         config.supabaseUrl,
         config.supabaseKey,
         {
-          auth: { 
+          auth: {
             persistSession: false,
-            autoRefreshToken: false
+            autoRefreshToken: false,
+            detectSessionInUrl: false
           },
-          db: { 
-            schema: 'public' 
+          db: {
+            schema: 'public'
           }
         }
       );
@@ -32,15 +32,13 @@ export const getSupabaseClient = () => {
       // Test connection
       (async () => {
         try {
-          const { data, error } = await supabaseClient
-            .from('notes')
-            .select('*')
-            .limit(1);
+          const { error } = await supabaseClient
+            .rpc('get_and_delete_note', { note_id: '00000000-0000-0000-0000-000000000000' });
             
-          if (error) {
+          if (error && error.code !== '22P02') { // Ignore UUID format error
             console.error('Supabase connection test failed:', error.message);
           } else {
-            console.log('Supabase client initialized and connected successfully');
+            console.log('Supabase client initialized successfully');
           }
         } catch (e) {
           console.error('Supabase connection test error:', e.message);

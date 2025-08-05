@@ -30,55 +30,20 @@
     </header>
 
     <section id="noteContentSection">
-      <div id="noteContent" class="note-content">Loading note...</div>
+      <div id="noteContent" class="note-content">Deleted...</div>
       <p class="note-meta">This note will be destroyed after reading.</p>
     </section>
 
-    <div id="errorMessage" class="error-message hidden"></div>
+    <div class="back-link">
+      <a href="https://1drive1hb.github.io/PrivacyNote/" class="home-link">
+        <i class="fas fa-home"></i> Back to PrivacyNote
+      </a>
+    </div>
   </div>
-
-  <script type="module">
-    // Detect environment
-    const isLocal = window.location.hostname === 'localhost' || 
-                   window.location.hostname === '127.0.0.1';
-    const isGitHubPages = window.location.hostname.includes('github.io');
-    
-    // Set CSS path dynamically
-    const cssPath = isLocal ? '../src/css/styles.css' : 
-                   isGitHubPages ? '/PrivacyNote/src/css/styles.css' : './src/css/styles.css';
-    document.getElementById('css-link').href = cssPath;
-
-    try {
-      // Set correct import path based on environment
-      let modulePath;
-      if (isLocal) {
-        modulePath = '../src/js/actions/noteActions.js';
-      } else if (isGitHubPages) {
-        modulePath = '/PrivacyNote/src/js/actions/noteActions.js';
-      } else {
-        modulePath = './src/js/actions/noteActions.js';
-      }
-      
-      const { getNote } = await import(modulePath);
-      
-      const urlParams = new URLSearchParams(window.location.search);
-      const noteId = urlParams.get('id');
-      
-      if (!noteId) throw new Error('Invalid note URL - missing ID');
-      
-      const content = await getNote(noteId, '');
-      document.getElementById('noteContent').textContent = content;
-    } catch (error) {
-      console.error('Error:', error);
-      const el = document.getElementById('noteContent');
-      el.textContent = 'Error: ' + error.message;
-      el.style.color = 'red';
-      
-      // Also show error in error message div
-      const errorEl = document.getElementById('errorMessage');
-      errorEl.textContent = error.message;
-      errorEl.classList.remove('hidden');
-    }
-  </script>
+  <!-- Load environment first -->
+  <script src="./src/js/load-Env.js"></script>
+  <!-- Then load other scripts -->
+  <script type="module" src="./src/js/app.js"></script>
+  <script type="module" src="./src/js/actions/noteAction.js"></script>
 </body>
 </html>

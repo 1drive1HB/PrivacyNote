@@ -1,9 +1,12 @@
 # Secrets
 .env
 env.local
-
+env.json
 public/env.js
+src/js/load-env.js
 public/
+private/
+
 # Temporary files
 src/css/.ttt.md
 

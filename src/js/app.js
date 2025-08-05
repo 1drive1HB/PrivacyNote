@@ -1,4 +1,3 @@
-// src/js/app.js
 document.addEventListener('DOMContentLoaded', async () => {
   // Safe element getter with error handling
   const getElement = (id) => {
@@ -27,24 +26,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  // Rest of your existing code...
-});
-
-  // Exit if essential elements are missing
-  if (!elements.createNoteBtn || !elements.noteText) {
-    console.error('Essential elements missing - cannot initialize app');
-    return;
-  }
-
-const url = isLocal 
-  ? `http://127.0.0.1:8080/note.html?id=${newNote.id}`
-  : `${window.location.origin}${basePath}/note.html?id=${newNote.id}`;
-  
+  // Environment detection
+  const isLocal = window.location.hostname === 'localhost' || 
+                 window.location.hostname === '127.0.0.1';
   const isGitHubPages = window.location.hostname.includes('github.io');
-  
-  // Base path configuration
   const basePath = isGitHubPages ? '/PrivacyNote' : '';
-  const notePagePath = `${basePath}/note.html`;
 
   // Initialize button state
   toggleButtonState(false, 'Create Secure Note');
@@ -60,10 +46,15 @@ const url = isLocal
 
       toggleButtonState(true, 'Creating...');
       
-      const { createNote } = await import('./actions/noteQuery.js');
-      const newNote = await createNote(content, '', 86400);
+      const { createNote } = await import(
+        isLocal ? './actions/noteQuery.js' : 
+        isGitHubPages ? '/PrivacyNote/src/js/actions/noteQuery.js' : 
+        './actions/noteQuery.js'
+      );
       
-      const url = `${window.location.origin}${notePagePath}?id=${newNote.id}`;
+      const newNote = await createNote(content, 86400);
+      
+      const url = `${window.location.origin}${basePath}/note.html?id=${newNote.id}`;
       
       // Update UI
       elements.noteLink.textContent = url;
@@ -85,9 +76,8 @@ const url = isLocal
       };
 
       // WhatsApp Share
-      if (elements.whatsappShare) {
-        elements.whatsappShare.classList.remove('hidden');
-        elements.whatsappShare.onclick = () => {
+      if (elements.whatsappBtn) {
+        elements.whatsappBtn.onclick = () => {
           const message = `Check out this secret note: ${url}`;
           const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
           window.open(
@@ -104,7 +94,7 @@ const url = isLocal
       console.error('Error creating note:', error);
       showFeedback(`Error: ${error.message}`, 'error');
     } finally {
-      toggleButtonState(false, 'Create Note');
+      toggleButtonState(false, 'Create Secure Note');
     }
   });
 

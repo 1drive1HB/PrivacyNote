@@ -21,11 +21,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     const noteId = urlParams.get('id');
     if (!noteId) throw new Error('Invalid note URL - missing ID');
 
-    // Import noteQuery
+    // Update the import section in noteAction.js
     const { getNote } = await import(
-      isLocal ? './noteQuery.js' : 
+      isLocal ? '../actions/noteQuery.js' : 
       isGitHubPages ? '/PrivacyNote/src/js/actions/noteQuery.js' : 
-      './noteQuery.js'
+      '../actions/noteQuery.js'
     );
     
     // Get and destroy note

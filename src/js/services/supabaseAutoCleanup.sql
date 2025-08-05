@@ -36,3 +36,5 @@
 
 -- CREATE POLICY "Allow delete via function" ON notes
 --   FOR DELETE USING (false); -- Only via function
+
+-- SELECT * FROM notes

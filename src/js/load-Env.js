@@ -1,18 +1,44 @@
 // load-Env.js
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    const response = await fetch('./env.json');
-    if (!response.ok) throw new Error('Failed to load env.json');
+    // Try local development path first
+    const localResponse = await fetch('./env.json');
+    if (localResponse.ok) {
+      const env = await localResponse.json();
+      window.__ENV = {
+        SUPABASE_URL: env.SUPABASE_URL,
+        SUPABASE_KEY: env.SUPABASE_KEY,
+        SUPABASE_TABLE_M: env.SUPABASE_TABLE_M,
+        CF_TR: env.CF_TR
+      };
+      console.log('Local environment loaded successfully');
+      return;
+    }
     
-    const env = await response.json();
-    window.__ENV = {
-      SUPABASE_URL: env.SUPABASE_URL,
-      SUPABASE_KEY: env.SUPABASE_KEY
-    };
+    // Fall back to production path (GitHub Pages)
+    const prodResponse = await fetch('/PrivacyNote/env.json');
+    if (prodResponse.ok) {
+      const env = await prodResponse.json();
+      window.__ENV = {
+        SUPABASE_URL: env.SUPABASE_URL,
+        SUPABASE_KEY: env.SUPABASE_KEY,
+        SUPABASE_TABLE_M: env.SUPABASE_TABLE_M,
+        CF_TR: env.CF_TR
+      };
+      console.log('Production environment loaded successfully');
+      return;
+    }
     
-    console.log('Local environment loaded successfully');
+    throw new Error('Failed to load environment from both paths');
+    
   } catch (error) {
-    console.warn('Error loading local environment:', error.message);
-    // Production will use the empty config which gets filled by GitHub Actions
+    console.error('Error loading environment:', error.message);
+    // Set empty config as fallback
+    window.__ENV = {
+      SUPABASE_URL: '',
+      SUPABASE_KEY: '',
+      SUPABASE_TABLE_M: '',
+      CF_TR: ''
+    };
   }
 });

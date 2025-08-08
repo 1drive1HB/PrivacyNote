@@ -1,26 +1,37 @@
-// config.js
 const config = {
   supabaseUrl: '',
   supabaseKey: '',
-  isProduction: true
+  tableName: 'notes', // Default table name
+  isProduction: false
 };
 
-// Try to load from window.__ENV first (set by load-Env.js)
-if (window.__ENV) {
-  config.supabaseUrl = window.__ENV.SUPABASE_URL;
-  config.supabaseKey = window.__ENV.SUPABASE_KEY;
-}
+export const initializeConfig = async () => {
+  try {
+    let waitCount = 0;
+    while (!window.__ENV && waitCount < 20) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      waitCount++;
+    }
 
-// Validate config
-if (!config.supabaseUrl || !config.supabaseKey) {
-  console.error('Missing Supabase configuration');
-}
+    if (window.__ENV) {
+      config.supabaseUrl = window.__ENV.SUPABASE_URL || '';
+      config.supabaseKey = window.__ENV.SUPABASE_KEY || '';
+      config.tableName = window.__ENV.SUPABASE_TABLE_M || 'notes';
+      config.isProduction = !(window.location.hostname === 'localhost' || 
+                            window.location.hostname === '127.0.0.1');
+    }
 
-// Secure logging
-console.log('Config loaded:', { 
-  ...config, 
-  supabaseKey: config.supabaseKey ? '***MASKED***' : 'MISSING',
-  isProduction: config.isProduction ? '***MASKED***' : 'MISSING',
-});
+    console.log('Config loaded:', { 
+      ...config, 
+      supabaseKey: '***MASKED***',
+      supabaseUrl: config.supabaseUrl ? '***MASKED***' : 'MISSING'
+    });
+
+    return config;
+  } catch (error) {
+    console.error('Config initialization failed:', error);
+    return config;
+  }
+};
 
 export { config };

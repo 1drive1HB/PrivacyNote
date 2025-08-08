@@ -1,11 +1,13 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { config } from '../config.js'
+import { initializeConfig } from '../config.js'
 
 let supabaseClient = null
 
-export const getSupabaseClient = () => {
+export const getSupabaseClient = async () => {
   if (!supabaseClient) {
     console.log('Initializing Supabase client...');
+    
+    const config = await initializeConfig();
     
     if (!config.supabaseUrl || !config.supabaseKey) {
       const errorMsg = 'Missing Supabase configuration';
@@ -30,20 +32,18 @@ export const getSupabaseClient = () => {
       );
       
       // Test connection
-      (async () => {
-        try {
-          const { error } = await supabaseClient
-            .rpc('get_and_delete_note', { note_id: '00000000-0000-0000-0000-000000000000' });
-            
-          if (error && error.code !== '22P02') { // Ignore UUID format error
-            console.error('Supabase connection test failed:', error.message);
-          } else {
-            console.log('Supabase client initialized successfully');
-          }
-        } catch (e) {
-          console.error('Supabase connection test error:', e.message);
+      try {
+        const { error } = await supabaseClient
+          .rpc('get_and_delete_note', { note_id: '00000000-0000-0000-0000-000000000000' });
+          
+        if (error && error.code !== '22P02') {
+          console.error('Supabase connection test failed:', error.message);
+        } else {
+          console.log('Supabase client initialized successfully');
         }
-      })();
+      } catch (e) {
+        console.error('Supabase connection test error:', e.message);
+      }
       
     } catch (error) {
       console.error('Supabase client initialization failed:', error.message);

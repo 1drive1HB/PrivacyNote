@@ -1,6 +1,6 @@
 # PrivacyNote - Secure Note Sharing
 
-![App Screenshot](public/screenshot.png)
+# (https://1drive1hb.github.io/PrivacyNote/)
 
 A secure, self-destructing note sharing application with end-to-end encryption.
 
@@ -34,16 +34,8 @@ C:\Users\Mat\Desktop\NewPrivN\
 │           static.yml
 │
 ├───public
-│       .gitleaks.toml
-│       .ttt.md
-│       3rd.yml
-│       better_arh.md
-│       dbshema.md
 │       env.js
 │       env.local
-│       oldStatic.yml
-│       static.yml
-│       supabaseRLS.md
 │       todo.md
 │
 └───src
@@ -54,6 +46,7 @@ C:\Users\Mat\Desktop\NewPrivN\
         │   app.js
         │   config.js
         │   load-Env.js
+        │   .ttt.md
         │
         ├───actions
         │       cryptoActions.js
@@ -64,3 +57,4 @@ C:\Users\Mat\Desktop\NewPrivN\
         └───services
                 supabase.js
                 supabaseAutoCleanup.sql
+

@@ -1,3 +1,4 @@
+//src\js\app.js
 import { DomAppService } from './services/domApp_service.js';
 import { NoteAppService } from './services/noteApp_service.js';
 

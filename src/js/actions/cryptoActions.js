@@ -1,3 +1,4 @@
+//src\js\actions\cryptoActions.js
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 const salt = encoder.encode('secure-note-salt')

@@ -1,7 +1,8 @@
+//src\js\config.js
 const config = {
   supabaseUrl: '',
   supabaseKey: '',
-  tableName: 'notes', // Default table name
+  tableName: '', // Default table name notes
   isProduction: false
 };
 
@@ -17,8 +18,9 @@ export const initializeConfig = async () => {
       config.supabaseUrl = window.__ENV.SUPABASE_URL || '';
       config.supabaseKey = window.__ENV.SUPABASE_KEY || '';
       config.tableName = window.__ENV.SUPABASE_TABLE_M || 'notes';
-      config.isProduction = !(window.location.hostname === 'localhost' || 
-                            window.location.hostname === '127.0.0.1');
+      config.isProduction = !(window.location.hostname === 'http://127.0.0.1:8080' || 
+                                          window.location.hostname === 'localhost' ||
+                                          window.location.hostname === '127.0.0.1');
     }
 
     console.log('Config loaded:', { 

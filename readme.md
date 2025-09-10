@@ -34,8 +34,7 @@ C:\Users\Mat\Desktop\NewPrivN\
 │           static.yml
 │
 ├───public
-│       env.js
-│       env.local
+        env.js
 │       todo.md
 │
 └───src

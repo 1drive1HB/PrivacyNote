@@ -21,10 +21,7 @@ export class NoteAppService {
       console.log('[NoteApp] Environment:', env);
       
       // Corrected import path
-      const modulePath = `${env.assetsPath}/src/js/actions/noteQuery.js`;
-      console.log('[NoteApp] Importing from:', modulePath);
-      
-      const { createNote } = await import(modulePath);
+      const { createNote } = await import('../actions/noteQuery.js');
       console.log('[NoteApp] Module loaded successfully');
       
       const newNote = await createNote(content, 86400);

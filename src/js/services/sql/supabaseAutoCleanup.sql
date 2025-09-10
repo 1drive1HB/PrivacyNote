@@ -38,3 +38,7 @@
 --   FOR DELETE USING (false); -- Only via function
 
 -- SELECT * FROM notes
+-- TRUNCATE TABLE notes
+
+
+--- prod delete? prod see whats different , if not rereate function

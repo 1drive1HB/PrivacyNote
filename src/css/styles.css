@@ -129,3 +129,66 @@ button:disabled { opacity: 0.7; cursor: not-allowed; background: #a0aec0 !import
   .logo { width: 44px; height: 44px; }
   h1 { font-size: 1.4rem; }
 }
+
+/* Settings Accordion Styles */
+.settings-accordion {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin: 20px 0;
+  overflow: hidden;
+}
+
+.accordion-header {
+  padding: 15px;
+  background: #f8f9fa;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.accordion-header:hover {
+  background: #e9ecef;
+}
+
+.accordion-content {
+  padding: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.accordion-content.active {
+  padding: 15px;
+  max-height: 200px;
+}
+
+.setting-group {
+  margin-bottom: 15px;
+}
+
+.setting-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+  margin: 0;
+}

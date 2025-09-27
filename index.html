@@ -6,7 +6,6 @@
   <title>PrivacyNote - Secure Self-Destructing Notes</title>
   <link rel="stylesheet" href="./src/css/styles.css">
   <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1803/1803612.png">
-  <!-- WhatsApp icon from Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -22,6 +21,48 @@
           <label for="noteText">Write your secret note:</label>
           <p class="description">Your note will self-destruct after being read</p>
           <textarea id="noteText" placeholder="Type your secret here..."></textarea>
+        </div>
+
+        <!-- ADDED: Settings Accordion -->
+        <div class="settings-accordion">
+          <div class="accordion-header">
+            <i class="fas fa-cog"></i>
+            <span>Security Settings</span>
+            <i class="fas fa-chevron-down accordion-arrow"></i>
+          </div>
+          <div class="accordion-content">
+            <div class="setting-group">
+              <label class="setting-label">Encryption:</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="encryption" value="encryption" checked>
+                  <span class="radio-custom"></span>
+                  With Encryption
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="encryption" value="no-encryption">
+                  <span class="radio-custom"></span>
+                  No Encryption
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-group">
+              <label class="setting-label">Expiration:</label>
+              <div class="radio-group">
+                <label class="radio-label">
+                  <input type="radio" name="expiration" value="24h" checked>
+                  <span class="radio-custom"></span>
+                  24 Hours
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="expiration" value="48h">
+                  <span class="radio-custom"></span>
+                  48 Hours
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="buttons">
@@ -57,13 +98,25 @@
 
   <div id="copyFeedback" class="copy-feedback hidden"></div>
 
-<!-- In both index.html and note.html -->
-<!-- Load environment first -->
-<script src="./src/js/load-Env.js"></script>
-<!-- Then load config -->
-<script type="module" src="./src/js/config.js"></script>
-<!-- Then load other scripts -->
-<script type="module" src="./src/js/app.js"></script>
-<script type="module" src="./src/js/services/noteApp_service.js"></script>
+  <script src="./src/js/load-Env.js"></script>
+  <script type="module" src="./src/js/config.js"></script>
+  <script type="module" src="./src/js/app.js"></script>
+  <script type="module" src="./src/js/services/noteApp_service.js"></script>
+  <script>
+  // Accordion functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const accordionHeader = document.querySelector('.accordion-header');
+    const accordionContent = document.querySelector('.accordion-content');
+    
+    if (accordionHeader && accordionContent) {
+      accordionHeader.addEventListener('click', function() {
+        accordionContent.classList.toggle('active');
+        const arrow = accordionHeader.querySelector('.accordion-arrow');
+        arrow.classList.toggle('fa-chevron-down');
+        arrow.classList.toggle('fa-chevron-up');
+      });
+    }
+  });
+</script>
 </body>
 </html>

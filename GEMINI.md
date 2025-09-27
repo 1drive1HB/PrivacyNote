@@ -81,8 +81,6 @@ C:\Users\mat\Desktop\MAT_PrivN_pc_n\
 The `.gitignore` file correctly excludes:
 -   **Secrets**: `.env`, `env.json`, `public/env.js`.
 -   **Directories**: `public/`, `private/`.
--   **System files**: `.DS_Store`.
--   **Dependencies**: `node_modules/`.
 
 This is a good setup for keeping sensitive information and unnecessary files out of the repository.
 

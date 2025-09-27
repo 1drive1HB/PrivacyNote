@@ -31,19 +31,19 @@ export const getSupabaseClient = async () => {
         }
       );
       
-      // Test connection
-      try {
-        const { error } = await supabaseClient
-          .rpc('get_and_delete_note', { note_id: '00000000-0000-0000-0000-000000000000' });
+      // // Test connection
+      // try {
+      //   const { error } = await supabaseClient
+      //     .rpc('get_and_delete_note', { note_id: '00000000-0000-0000-0000-000000000000' });
           
-        if (error && error.code !== '22P02') {
-          console.error('Supabase connection test failed:', error.message);
-        } else {
-          console.log('Supabase client initialized successfully');
-        }
-      } catch (e) {
-        console.error('Supabase connection test error:', e.message);
-      }
+      //   if (error && error.code !== '22P02') {
+      //     console.error('Supabase connection test failed:', error.message);
+      //   } else {
+      //     console.log('Supabase client initialized successfully');
+      //   }
+      // } catch (e) {
+      //   console.error('Supabase connection test error:', e.message);
+      // }
       
     } catch (error) {
       console.error('Supabase client initialization failed:', error.message);

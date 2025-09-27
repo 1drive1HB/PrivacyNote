@@ -15,22 +15,44 @@ export class NoteAppService {
     };
   }
 
+  // In noteApp_service.js - update the createNote call
   static async handleNoteCreation(content, elements) {
     try {
       const env = this.getEnvironment();
       console.log('[NoteApp] Environment:', env);
       
-      // Corrected import path
+      // Get settings from radio buttons
+      const encryptionType = document.querySelector('input[name="encryption"]:checked')?.value || 'encryption';
+      const expirationType = document.querySelector('input[name="expiration"]:checked')?.value || '24h';
+      
+      const isEncrypted = encryptionType === 'encryption';
+      const password = isEncrypted ? prompt('Enter encryption password:') : null;
+      
+      if (isEncrypted && !password) {
+        throw new Error('Password required for encrypted note');
+      }
+
+      // Convert expiration to seconds
+      let expiresIn = 24 * 60 * 60; // Default 24 hours
+      if (expirationType === '48h') {
+        expiresIn = 48 * 60 * 60;
+      }
+
       const { createNote } = await import('../actions/noteQuery.js');
       console.log('[NoteApp] Module loaded successfully');
       
-      const newNote = await createNote(content, 86400);
+      // FIXED: Pass all required parameters including isEncrypted
+      const newNote = await createNote(content, expiresIn, isEncrypted, password);
       
       if (!newNote?.id) {
         throw new Error('Invalid note response from server');
       }
       
-      const url = `${window.location.origin}${env.basePath}/note.html?id=${newNote.id}`;
+      let url = `${window.location.origin}${env.basePath}/note.html?id=${newNote.id}`;
+      if (isEncrypted) {
+        url += '&encrypted=true';
+      }
+      
       this.updateUIForNewNote(url, elements);
       
       return true;

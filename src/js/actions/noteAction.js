@@ -9,7 +9,7 @@ export class NoteAction {
       await this.setupEnvironment();
       const noteId = this.getNoteIdFromUrl();
       
-      noteContentEl.textContent = 'Loading note...';
+      //noteContentEl.textContent = 'Loading note...';
       
       const { content, markAsRead } = await this.getNoteContent(noteId);
       

@@ -3,38 +3,39 @@ import { getSupabaseClient } from '../services/supabase.js';
 import { config } from '../config.js';
 import { encryptData, decryptData } from './cryptoActions.js';
 
-export const createNote = async (content, expiresIn, isEncrypted = false, password = null) => {
+// Fixed encryption key
+const ENCRYPTION_KEY = 'temp-note-secure-key-2024';
+
+export const createNote = async (content, expiresIn, isEncrypted = false) => {
   try {
+    console.log('=== NOTEQUERY CREATE NOTE CALLED ===');
+    console.log('Parameters received:', { contentLength: content.length, expiresIn, isEncrypted });
+    
     const supabase = await getSupabaseClient();
     if (!supabase) throw new Error('Supabase client not initialized');
 
     let processedContent = content;
-    console.log('Creating note with encryption:', isEncrypted, 'password:', !!password);
+    console.log('Creating note with encryption:', isEncrypted);
     
-    // Encrypt content if encryption is enabled
-    if (isEncrypted && password) {
-      console.log('Encrypting content...');
-      processedContent = await encryptData(content, password);
-    } else if (isEncrypted) {
-      // If encryption is selected but no password, use a default one
-      password = 'default-secret';
-      processedContent = await encryptData(content, password);
+    if (isEncrypted) {
+      console.log('🔄 Encrypting content...');
+      processedContent = await encryptData(content, ENCRYPTION_KEY);
+      console.log('✅ Content encrypted');
+    } else {
+      console.log('🔓 No encryption - storing as plain text');
     }
 
-    // Determine expiration flags based on expiresIn (seconds)
     const expiresIn24h = expiresIn === 24 * 60 * 60;
     const expiresIn48h = expiresIn === 48 * 60 * 60;
 
-    console.log('Inserting into database:', {
-      content_length: processedContent.length,
+    console.log('Inserting into database with settings:', {
       is_encrypted: isEncrypted,
       expires_in_24h: expiresIn24h,
       expires_in_48h: expiresIn48h
     });
 
-    // Insert directly into the table (let the trigger handle expires_at)
     const { data, error } = await supabase
-      .from('notes')
+      .from(config.tableName)
       .insert({
         content: processedContent,
         is_encrypted: isEncrypted,
@@ -50,7 +51,7 @@ export const createNote = async (content, expiresIn, isEncrypted = false, passwo
       throw new Error(error.message || 'Failed to create note');
     }
 
-    console.log('Note created successfully:', data.id);
+    console.log('✅ Note created successfully:', data.id);
     return data;
 
   } catch (error) {
@@ -59,7 +60,7 @@ export const createNote = async (content, expiresIn, isEncrypted = false, passwo
   }
 };
 
-export const getNote = async (id, password = null) => {
+export const getNote = async (id) => {
   try {
     if (!id) throw new Error('Missing note ID');
     
@@ -68,9 +69,8 @@ export const getNote = async (id, password = null) => {
 
     console.log('Retrieving note:', id);
     
-    // First, get the note without marking as read
     const { data: noteData, error: fetchError } = await supabase
-      .from('notes')
+      .from(config.tableName)
       .select('*')
       .eq('id', id)
       .single();
@@ -88,52 +88,38 @@ export const getNote = async (id, password = null) => {
       id: noteData.id,
       is_encrypted: noteData.is_encrypted,
       read_count: noteData.read_count,
-      expires_at: noteData.expires_at
+      expired: new Date(noteData.expires_at) < new Date()
     });
 
-    // Check if already read
     if (noteData.read_count > 0) {
       throw new Error('Note has already been read and destroyed');
     }
 
-    // Check for expiration
     if (new Date(noteData.expires_at) < new Date()) {
       throw new Error('Note has expired');
     }
 
     let content = noteData.content;
     
-    // Decrypt content if it's encrypted
     if (noteData.is_encrypted) {
-      console.log('Decrypting encrypted content...');
-      if (!password) {
-        // Try with default password if none provided
-        password = prompt('This note is encrypted. Please enter the password:');
-        if (!password) {
-          throw new Error('Password required for encrypted note');
-        }
-      }
-      content = await decryptData(noteData.content, password);
+      console.log('Decrypting encrypted content automatically...');
+      content = await decryptData(noteData.content, ENCRYPTION_KEY);
     }
 
-    // Mark as read by incrementing read_count
     console.log('Marking note as read...');
     const { error: updateError } = await supabase
-      .from('notes')
+      .from(config.tableName)
       .update({ read_count: 1 })
       .eq('id', id);
 
     if (updateError) {
       console.error('Error marking as read:', updateError);
-      throw new Error('Failed to mark note as read');
     }
 
-    console.log('Note retrieved and marked as read successfully');
+    console.log('Note retrieved successfully');
     return {
       content: content,
-      markAsRead: async () => {
-        // Already handled above
-      }
+      markAsRead: async () => {}
     };
 
   } catch (error) {

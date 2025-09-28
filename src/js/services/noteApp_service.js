@@ -1,6 +1,7 @@
 //src\js\services\noteApp_service.js
 import { DomAppService } from './domApp_service.js';
 
+console.log('=== NOTEAPP SERVICE LOADED ===');
 export class NoteAppService {
   static getEnvironment() {
     const isLocal = window.location.hostname === 'localhost' || 
@@ -15,92 +16,95 @@ export class NoteAppService {
     };
   }
 
-  // In noteApp_service.js - update the createNote call
   static async handleNoteCreation(content, elements) {
     try {
+      console.log('=== NOTEAPP SERVICE CALLED ===');
+      
       const env = this.getEnvironment();
-      console.log('[NoteApp] Environment:', env);
       
-      // Get settings from radio buttons
-      const encryptionType = document.querySelector('input[name="encryption"]:checked')?.value || 'encryption';
-      const expirationType = document.querySelector('input[name="expiration"]:checked')?.value || '24h';
+      // Get settings directly to ensure they're read
+      const encryptionValue = this.getEncryptionSetting();
+      const expirationType = this.getExpirationSetting();
       
-      const isEncrypted = encryptionType === 'encryption';
-      const password = isEncrypted ? prompt('Enter encryption password:') : null;
+      console.log('Encryption setting:', encryptionValue);
+      console.log('Expiration setting:', expirationType);
       
-      if (isEncrypted && !password) {
-        throw new Error('Password required for encrypted note');
-      }
+      const isEncrypted = encryptionValue === 'true';
+      const expiresIn = expirationType === '48h' ? 48 * 60 * 60 : 24 * 60 * 60;
 
-      // Convert expiration to seconds
-      let expiresIn = 24 * 60 * 60; // Default 24 hours
-      if (expirationType === '48h') {
-        expiresIn = 48 * 60 * 60;
-      }
+      console.log('Final values - isEncrypted:', isEncrypted, 'expiresIn:', expiresIn);
 
       const { createNote } = await import('../actions/noteQuery.js');
-      console.log('[NoteApp] Module loaded successfully');
+      console.log('Calling createNote...');
       
-      // FIXED: Pass all required parameters including isEncrypted
-      const newNote = await createNote(content, expiresIn, isEncrypted, password);
+      const newNote = await createNote(content, expiresIn, isEncrypted);
       
       if (!newNote?.id) {
-        throw new Error('Invalid note response from server');
+        throw new Error('Failed to create note');
       }
       
-      let url = `${window.location.origin}${env.basePath}/note.html?id=${newNote.id}`;
-      if (isEncrypted) {
-        url += '&encrypted=true';
-      }
+      const url = this.generateNoteUrl(newNote.id, isEncrypted, env);
+      this.displayNoteLink(url, elements);
       
-      this.updateUIForNewNote(url, elements);
-      
+      DomAppService.showFeedback(elements.copyFeedback, 'Secure note created successfully!', 'success');
       return true;
     } catch (error) {
-      console.error('[NoteApp] Note creation failed:', error);
+      console.error('NoteAppService Error:', error);
       throw error;
     }
   }
 
-  static updateUIForNewNote(url, elements) {
+  static getEncryptionSetting() {
+    try {
+      const radio = document.querySelector('input[name="encryption"]:checked');
+      const value = radio ? radio.value : 'true'; // Default to encryption ON
+      console.log('Encryption radio value:', value);
+      return value;
+    } catch (error) {
+      console.error('Error getting encryption setting:', error);
+      return 'true'; // Default to encryption ON
+    }
+  }
+
+  static getExpirationSetting() {
+    try {
+      const radio = document.querySelector('input[name="expiration"]:checked');
+      const value = radio ? radio.value : '24h'; // Default to 24h
+      console.log('Expiration radio value:', value);
+      return value;
+    } catch (error) {
+      console.error('Error getting expiration setting:', error);
+      return '24h'; // Default to 24h
+    }
+  }
+
+  static generateNoteUrl(noteId, isEncrypted, env) {
+    let url = `${window.location.origin}${env.basePath}/note.html?id=${noteId}`;
+    if (isEncrypted) {
+      url += '&encrypted=true';
+    }
+    return url;
+  }
+
+  static displayNoteLink(url, elements) {
     elements.linkContainer.classList.remove('hidden');
-    this.setupNoteLink(url, elements.noteLink, elements.copyFeedback);
-    this.setupWhatsAppShare(url, elements.whatsappBtn, elements.copyFeedback);
+    elements.noteLink.textContent = url;
+    elements.noteLink.setAttribute('data-url', url);
+    
+    elements.noteLink.onclick = () => DomAppService.copyToClipboard(url, elements.copyFeedback);
+    
+    if (elements.whatsappBtn) {
+      elements.whatsappBtn.onclick = () => this.shareViaWhatsApp(url, elements.copyFeedback);
+    }
   }
 
-  static setupNoteLink(url, noteLinkElement, feedbackElement) {
-    noteLinkElement.textContent = url;
-    
-    noteLinkElement.onclick = async (e) => {
-      e.preventDefault();
-      try {
-        await navigator.clipboard.writeText(url);
-        noteLinkElement.classList.add('copied');
-        DomAppService.showFeedback(feedbackElement, '✅ Link copied!', 'success');
-        setTimeout(() => {
-          noteLinkElement.classList.remove('copied');
-        }, 2000);
-      } catch (err) {
-        DomAppService.showFeedback(feedbackElement, '❌ Failed to copy', 'error');
-      }
-    };
-  }
-
-  static setupWhatsAppShare(url, whatsappBtn, feedbackElement) {
-    if (!whatsappBtn) return;
-    
-    whatsappBtn.onclick = () => {
-      try {
-        const message = `Check out this secret note: ${url}`;
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        const whatsappUrl = isMobile 
-          ? `whatsapp://send?text=${encodeURIComponent(message)}` 
-          : `https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-        
-        window.open(whatsappUrl, '_blank');
-      } catch (err) {
-        DomAppService.showFeedback(feedbackElement, 'Failed to open WhatsApp', 'error');
-      }
-    };
+  static shareViaWhatsApp(url, feedbackElement) {
+    try {
+      const message = `Check out this secret note: ${url}`;
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+    } catch (err) {
+      DomAppService.showFeedback(feedbackElement, 'Failed to open WhatsApp', 'error');
+    }
   }
 }

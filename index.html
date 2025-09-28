@@ -23,46 +23,9 @@
           <textarea id="noteText" placeholder="Type your secret here..."></textarea>
         </div>
 
-        <!-- ADDED: Settings Accordion -->
-        <div class="settings-accordion">
-          <div class="accordion-header">
-            <i class="fas fa-cog"></i>
-            <span>Security Settings</span>
-            <i class="fas fa-chevron-down accordion-arrow"></i>
-          </div>
-          <div class="accordion-content">
-            <div class="setting-group">
-              <label class="setting-label">Encryption:</label>
-              <div class="radio-group">
-                <label class="radio-label">
-                  <input type="radio" name="encryption" value="encryption" checked>
-                  <span class="radio-custom"></span>
-                  With Encryption
-                </label>
-                <label class="radio-label">
-                  <input type="radio" name="encryption" value="no-encryption">
-                  <span class="radio-custom"></span>
-                  No Encryption
-                </label>
-              </div>
-            </div>
-
-            <div class="setting-group">
-              <label class="setting-label">Expiration:</label>
-              <div class="radio-group">
-                <label class="radio-label">
-                  <input type="radio" name="expiration" value="24h" checked>
-                  <span class="radio-custom"></span>
-                  24 Hours
-                </label>
-                <label class="radio-label">
-                  <input type="radio" name="expiration" value="48h">
-                  <span class="radio-custom"></span>
-                  48 Hours
-                </label>
-              </div>
-            </div>
-          </div>
+        <!-- Settings Accordion loaded from external file -->
+        <div id="settings-container">
+          <!-- This will be populated by JavaScript -->
         </div>
 
         <div class="buttons">
@@ -70,7 +33,7 @@
             <i class="fas fa-lock"></i> Create Secure Note
           </button>
           <button id="clearBtn" class="btn-secondary">
-            <i class="fas fa-trash"></i> Clear
+            <i class="fas fa-trash"></i> Clear All
           </button>
         </div>
 
@@ -81,7 +44,7 @@
           </div>
           <div id="noteLink" class="note-link"></div>
           
-          <div id="whatsappShare" class="whatsapp-share">
+          <div class="whatsapp-share">
             <button id="whatsappBtn" class="whatsapp-btn">
               <i class="fab fa-whatsapp"></i> Share via WhatsApp
             </button>
@@ -100,23 +63,52 @@
 
   <script src="./src/js/load-Env.js"></script>
   <script type="module" src="./src/js/config.js"></script>
-  <script type="module" src="./src/js/app.js"></script>
-  <script type="module" src="./src/js/services/noteApp_service.js"></script>
+  <script type="module" src="./src/js/main.js"></script>
+
   <script>
-  // Accordion functionality
+  // Load settings component and initialize accordion
   document.addEventListener('DOMContentLoaded', function() {
-    const accordionHeader = document.querySelector('.accordion-header');
-    const accordionContent = document.querySelector('.accordion-content');
-    
-    if (accordionHeader && accordionContent) {
-      accordionHeader.addEventListener('click', function() {
-        accordionContent.classList.toggle('active');
-        const arrow = accordionHeader.querySelector('.accordion-arrow');
-        arrow.classList.toggle('fa-chevron-down');
-        arrow.classList.toggle('fa-chevron-up');
+    // Load settings HTML
+    fetch('./src/html/settings.html')
+      .then(response => response.text())
+      .then(html => {
+        document.getElementById('settings-container').innerHTML = html;
+        initializeAccordion();
+      })
+      .catch(error => {
+        console.error('Error loading settings:', error);
+        // Fallback settings HTML
+        document.getElementById('settings-container').innerHTML = `
+          <div class="settings-accordion">
+            <div class="accordion-header">
+              <i class="fas fa-cog"></i>
+              <span>Security Settings</span>
+              <i class="fas fa-chevron-down accordion-arrow"></i>
+            </div>
+            <div class="accordion-content">
+              <p>Settings failed to load. Using default settings.</p>
+            </div>
+          </div>
+        `;
+        initializeAccordion();
       });
+
+    function initializeAccordion() {
+      const accordionHeader = document.querySelector('.accordion-header');
+      const accordionContent = document.querySelector('.accordion-content');
+      const accordionArrow = document.querySelector('.accordion-arrow');
+      
+      if (accordionHeader && accordionContent) {
+        accordionHeader.addEventListener('click', function() {
+          accordionContent.classList.toggle('active');
+          if (accordionArrow) {
+            accordionArrow.classList.toggle('fa-chevron-down');
+            accordionArrow.classList.toggle('fa-chevron-up');
+          }
+        });
+      }
     }
   });
-</script>
+  </script>
 </body>
 </html>

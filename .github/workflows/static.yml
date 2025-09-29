@@ -31,7 +31,10 @@ jobs:
         
       - name: Build and inject config
         run: |
-          # Inject all necessary production variables directly into config.js
+          # Remove the original config.js to avoid conflicts
+          rm -f src/js/config.js
+          
+          # Create production config.js with the same structure as development
           cat > src/js/config.js << 'EOL'
           const config = {
             supabaseUrl: '${{ secrets.SUPABASE_URL }}',
@@ -43,36 +46,28 @@ jobs:
           };
 
           export const initializeConfig = async () => {
-            console.log('Production config loaded from GitHub Secrets:', {
-              ...config,
-              supabaseKey: config.supabaseKey ? '***MASKED***' : 'MISSING',
-              encryptionKey: config.encryptionKey ? '***MASKED***' : 'MISSING',
-              supabaseUrl: config.supabaseUrl ? '***MASKED***' : 'MISSING',
-              cfTr: config.cfTr ? '***MASKED***' : 'MISSING',
-              tableName: config.tableName ? '***MASKED***' : 'MISSING'
-            });
-            return config;
+            try {
+              // In production, we don't wait for window.__ENV, config is already populated
+              console.log('Production config loaded from GitHub Secrets:', { 
+                ...config, 
+                supabaseKey: config.supabaseKey ? '***MASKED***' : 'MISSING',
+                encryptionKey: config.encryptionKey ? '***MASKED***' : 'MISSING',
+                supabaseUrl: config.supabaseUrl ? '***MASKED***' : 'MISSING',
+                cfTr: config.cfTr ? '***MASKED***' : 'MISSING',
+                tableName: config.tableName ? '***MASKED***' : 'MISSING'
+              });
+              return config;
+            } catch (error) {
+              console.error('Config initialization failed:', error);
+              return config;
+            }
           };
 
           export { config };
           EOL
           
-          # Also create a simple env.js for production that doesn't try to load env.json
-          cat > env.js << 'EOL'
-          // Production environment - config is built-in via GitHub Actions
-          window.__ENV = {
-            SUPABASE_URL: '${{ secrets.SUPABASE_URL }}',
-            SUPABASE_KEY: '${{ secrets.SUPABASE_KEY }}',
-            SUPABASE_TABLE_M: '${{ secrets.SUPABASE_TABLE_M || 'notes' }}',
-            CF_TR: '${{ secrets.CF_TR }}',
-            ENCRYPTION_KEY: '${{ secrets.ENCRYPTION_KEY }}'
-          };
-          console.log('Production environment variables set');
-          EOL
-          
-          echo "Config files created successfully"
-          ls -la src/js/config.js
-          ls -la env.js
+          echo "✅ Production config.js created successfully"
+          echo "📁 File location: src/js/config.js"
           
       - name: Setup Pages
         uses: actions/configure-pages@v5

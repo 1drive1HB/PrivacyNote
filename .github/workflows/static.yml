@@ -28,13 +28,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-        
+          
       - name: Build and inject config
         run: |
-          # Remove the original config.js to avoid conflicts
-          rm -f src/js/config.js
-          
-          # Create production config.js with the same structure as development
           cat > src/js/config.js << 'EOL'
           const config = {
             supabaseUrl: '${{ secrets.SUPABASE_URL }}',
@@ -47,8 +43,8 @@ jobs:
 
           export const initializeConfig = async () => {
             try {
-              // In production, we don't wait for window.__ENV, config is already populated
-              console.log('Production config loaded from GitHub Secrets:', { 
+              // In production, config is already populated from GitHub Secrets
+              console.log('Config loaded:', { 
                 ...config, 
                 supabaseKey: config.supabaseKey ? '***MASKED***' : 'MISSING',
                 encryptionKey: config.encryptionKey ? '***MASKED***' : 'MISSING',
@@ -66,8 +62,7 @@ jobs:
           export { config };
           EOL
           
-          echo "✅ Production config.js created successfully"
-          echo "📁 File location: src/js/config.js"
+          echo "✅ Config file created with all environment variables"
           
       - name: Setup Pages
         uses: actions/configure-pages@v5

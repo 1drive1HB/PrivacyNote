@@ -61,8 +61,12 @@ jobs:
 
           export { config };
           EOL
-          
-          echo "✅ Config file created with all environment variables"
+            
+          echo "✅ Config file created"
+          echo "🔍 Checking if secrets are populated:"
+          echo "SUPABASE_URL length: ${#SUPABASE_URL}"
+          echo "SUPABASE_KEY length: ${#SUPABASE_KEY}"
+          EOL
           
       - name: Setup Pages
         uses: actions/configure-pages@v5

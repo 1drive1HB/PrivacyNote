@@ -1,48 +1,37 @@
-// src\js\load-Env.js (AND public/env.js - structure is identical for loading)
+// src\js\load-Env.js
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    // Try local development path first
-    const localResponse = await fetch('./env.json');
-    if (localResponse.ok) {
-      const env = await localResponse.json();
-      window.__ENV = {
-        SUPABASE_URL: env.SUPABASE_URL,
-        SUPABASE_KEY: env.SUPABASE_KEY,
-        SUPABASE_TABLE_M: env.SUPABASE_TABLE_M,
-        CF_TR: env.CF_TR,
-        ENCRYPTION_KEY: env.ENCRYPTION_KEY // <-- FIXED: Added ENCRYPTION_KEY
-      };
-      console.log('Local environment loaded successfully');
+    // Check if we're in production (GitHub Pages)
+    const isProduction = window.location.hostname.includes('github.io');
+    
+    if (isProduction) {
+      // In production, config is already built into config.js via GitHub Actions
+      console.log('✅ Production environment - config injected via GitHub Secrets');
+      // Set empty ENV since config.js already has all the values
+      window.__ENV = {};
       return;
     }
     
-    // Fall back to production path (GitHub Pages)
-    // (The path is different for each file, but the logic should load all keys)
-    const prodResponse = await fetch('/PrivacyNote/env.json'); // or './env.js' for the other file
-    if (prodResponse.ok) {
-      const env = await prodResponse.json();
-      window.__ENV = {
-        SUPABASE_URL: env.SUPABASE_URL,
-        SUPABASE_KEY: env.SUPABASE_KEY,
-        SUPABASE_TABLE_M: env.SUPABASE_TABLE_M,
-        CF_TR: env.CF_TR,
-        ENCRYPTION_KEY: env.ENCRYPTION_KEY // <-- FIXED: Added ENCRYPTION_KEY
-      };
-      console.log('Production environment loaded successfully');
-      return;
+    // Only in local development: try to load env.json
+    console.log('🔧 Local development - loading env.json');
+    const response = await fetch('./env.json');
+    if (!response.ok) {
+      throw new Error('env.json not found');
     }
     
-    throw new Error('Failed to load environment from both paths');
+    const env = await response.json();
+    window.__ENV = {
+      SUPABASE_URL: env.SUPABASE_URL,
+      SUPABASE_KEY: env.SUPABASE_KEY,
+      SUPABASE_TABLE_M: env.SUPABASE_TABLE_M,
+      CF_TR: env.CF_TR,
+      ENCRYPTION_KEY: env.ENCRYPTION_KEY
+    };
+    console.log('✅ Local environment loaded successfully');
     
   } catch (error) {
     console.error('Error loading environment:', error.message);
-    // Set empty config as fallback
-    window.__ENV = {
-      SUPABASE_URL: '',
-      SUPABASE_KEY: '',
-      SUPABASE_TABLE_M: '',
-      CF_TR: '',
-      ENCRYPTION_KEY: '' // <-- FIXED: Added ENCRYPTION_KEY
-    };
+    // Empty fallback - config.js will handle initialization
+    window.__ENV = {};
   }
 });

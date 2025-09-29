@@ -1,0 +1,270 @@
+/* ===== BASE STYLES ===== */
+:root {
+  --primary: #4299e1; --primary-dark: #3182ce; --success: #48bb78; --error: #f56565;
+  --text: #2d3748; --text-light: #718096; --bg: #f5f7fa; --card-bg: #fff; --border: #e2e8f0;
+  --dark-bg: #1a202c; 
+  --dark-card: #28303e; /* UPDATED: Slightly darker card for better contrast with light text/labels */
+  --dark-text: #e2e8f0; 
+  --dark-border: #4a5568;
+}
+
+* { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0;
+}
+/* ... (rest of base.css is unchanged) ... */
+
+* { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0; 
+  padding: 1rem;
+  background: var(--bg); 
+  color: var(--text); 
+  min-height: 100vh; 
+  line-height: 1.6;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== LAYOUT & CONTAINER ===== */
+.container {
+  max-width: 800px;
+  margin: 0 auto; 
+  padding: 1.8rem 1.2rem; 
+  background: var(--card-bg);
+  border-radius: 12px; 
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  flex: 1;
+}
+
+/* ===== IMPROVED HEADER ===== */
+.header { 
+  display: flex; 
+  align-items: center; 
+  margin-bottom: 2rem; 
+  gap: 15px;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo { 
+  width: 60px; 
+  height: 60px; 
+  transition: transform 0.3s ease; 
+}
+.logo:hover { 
+  transform: rotate(10deg) scale(1.05); 
+}
+
+.header-content {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+h1 { 
+  font-size: 2rem; 
+  margin: 0; 
+  color: #1a365d; 
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.tagline {
+  color: var(--text-light);
+  font-size: 0.9rem;
+  margin: 0;
+  font-weight: 400;
+}
+
+/* ===== IMPROVED FOOTER ===== */
+.footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.footer p {
+  margin: 0;
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.footer .small {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  opacity: 0.8;
+}
+
+.turnstile-footer {
+  flex-shrink: 0;
+}
+
+.turnstile-footer .cf-turnstile {
+  transform: scale(0.9);
+  transform-origin: right center;
+}
+
+/* ... (existing base.css content) ... */
+
+/* ===== FORM & INPUT STYLES (New Section) ===== */
+
+/* Ensure form elements and text area take up the full container width */
+.form-group {
+    width: 100%; /* Make sure the container for the textarea takes full width */
+    margin-bottom: 1.5rem;
+}
+
+#noteText {
+    width: 100%; /* FIX: Force textarea to fill the width of its parent (.form-group) */
+    min-height: 250px; /* Give it a decent minimum height */
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    resize: vertical; /* Allow vertical resizing, but not horizontal */
+    background: var(--card-bg);
+    color: var(--text);
+    transition: border-color 0.3s ease;
+}
+
+#noteText:focus {
+    border-color: var(--primary);
+    outline: none;
+}
+
+/* Dark Mode Form Fixes */
+@media (prefers-color-scheme: dark) {
+    #noteText {
+        background: var(--dark-card);
+        border-color: var(--dark-border);
+        color: var(--dark-text);
+    }
+}
+
+/* ===== DARK MODE ===== */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: var(--dark-bg);
+    color: var(--dark-text);
+  }
+  
+  .container {
+    background: var(--dark-card);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  
+  .header {
+    border-bottom-color: var(--dark-border);
+  }
+  
+  h1 {
+    color: #bee3f8;
+  }
+  
+  .tagline {
+    color: #a0aec0;
+  }
+  
+  .footer {
+    border-top-color: var(--dark-border);
+  }
+}
+
+/* ===== UTILITY CLASSES ===== */
+.hidden { display: none !important; }
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .container { 
+    padding: 1.5rem 1rem; 
+    border-radius: 10px; 
+    margin: 0.5rem;
+    max-width: none;
+  }
+  
+  .header { 
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .logo-container {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  h1 { 
+    font-size: 1.8rem; 
+  }
+  
+  .footer {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+  
+  .footer-content {
+    order: 2;
+  }
+  
+  .turnstile-footer {
+    order: 1;
+  }
+  
+  .turnstile-footer .cf-turnstile {
+    transform: scale(1);
+    transform-origin: center;
+  }
+}
+
+@media (max-width: 480px) {
+  body { 
+    padding: 0.5rem; 
+  }
+  
+  .container { 
+    padding: 1.2rem 0.8rem; 
+  }
+  
+  .logo { 
+    width: 50px; 
+    height: 50px; 
+  }
+  
+  h1 { 
+    font-size: 1.6rem; 
+  }
+  
+  .tagline {
+    font-size: 0.85rem;
+  }
+}

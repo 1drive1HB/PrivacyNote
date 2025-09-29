@@ -4,48 +4,54 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Secret Note</title>
-  <link rel="stylesheet" href="./src/css/styles.css">
+  
+  <link rel="stylesheet" href="./src/css/base.css">
+  <link rel="stylesheet" href="./src/css/components.css"> 
+  <link rel="stylesheet" href="./src/css/note.css">  
+  
   <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1803/1803612.png">
-  <!-- WhatsApp icon from Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    /* n Mobile Screenshot Protection
-    body {
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
-      touch-action: manipulation;
-    }
-    
-    @media (max-width: 768px) {
-      body {
-        overflow: hidden;
-        position: fixed;
-      }
-    } */
-</style>
+  
+  <style></style>
 </head>
 <body>
-  <div class="container">
+  <div class="container"> 
     <header class="header">
-      <img src="https://cdn-icons-png.flaticon.com/512/1803/1803612.png" alt="Logo" class="logo">
-      <h1>Secret Note</h1>
+      <div class="logo-container">
+        <img src="https://cdn-icons-png.flaticon.com/512/1803/1803612.png" alt="Logo" class="logo">
+        <div class="header-content">
+          <h1>Secret Note</h1>
+          <p class="tagline">One-time readable message</p>
+        </div>
+      </div>
     </header>
 
-    <section id="noteContentSection">
-      <div id="noteContent" class="note-content">Deleted...</div>
-      <p class="note-meta">This note will be destroyed after reading.</p>
-    </section>
+    <main>
+      <section id="noteContentSection">
+        <div class="form-group">
+          <div id="noteContent" class="note-content-area">Loading...</div>
+        </div>
+        
+        <p class="note-meta">This note will be destroyed after reading.</p>
+      </section>
 
-    <div class="back-link">
-      <a href="https://1drive1hb.github.io/PrivacyNote/" class="home-link">
-        <i class="fas fa-home"></i> Back to PrivacyNote
-      </a>
-    </div>
+      <div class="back-link">
+        <a href="index.html" class="home-link">
+          <i class="fas fa-home"></i> Back to PrivacyNote
+        </a>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <p>© 2025 PrivacyNote - Secure, self-destructing notes</p>
+        <p class="small">Notes are automatically deleted after being read</p>
+      </div>
+    </footer>
   </div>
-<!-- Remove duplicates and keep only these: -->
-<script src="./src/js/load-Env.js"></script>
-<script type="module" src="./src/js/config.js"></script>
-<script type="module" src="./src/js/actions/noteAction.js"></script>
+
+  <script src="./src/js/load-Env.js"></script>
+  <script type="module" src="./src/js/config.js"></script>
+  <script type="module" src="./src/js/actions/noteAction.js"></script>
 </body>
 </html>

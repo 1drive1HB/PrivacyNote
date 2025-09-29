@@ -31,16 +31,24 @@ jobs:
         
       - name: Build and inject config
         run: |
+          # Inject all necessary production variables directly into config.js
           cat > src/js/config.js <<EOL
           const config = {
             supabaseUrl: '${{ secrets.SUPABASE_URL }}',
             supabaseKey: '${{ secrets.SUPABASE_KEY }}',
+            tableName: 'notes', // Hardcoded table name for production
+            cfTr: '${{ secrets.CF_TR }}', // Cloudflare Turnstile Site Key
+            encryptionKey: '${{ secrets.ENCRYPTION_KEY }}', // Encryption Key
             isProduction: true
           };
           
           if (console?.log) {
-            const safeConfig = {...config, supabaseKey: '***MASKED***'};
-            console.log('Config loaded:', safeConfig);
+            const safeConfig = {
+              ...config, 
+              supabaseKey: '***MASKED***',
+              encryptionKey: '***MASKED***'
+            };
+            console.log('Config loaded from GitHub Secrets:', safeConfig);
           }
           
           export { config };

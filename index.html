@@ -4,29 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PrivacyNote - Secure Self-Destructing Notes</title>
-  <link rel="stylesheet" href="./src/css/styles.css">
+  
+  <!-- CSS Files -->
+  <link rel="stylesheet" href="./src/css/base.css">
+  <link rel="stylesheet" href="./src/css/components.css">
+  <link rel="stylesheet" href="./src/css/settings.css">
+  
   <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1803/1803612.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Cloudflare Turnstile -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
   <div class="container">
+    <!-- IMPROVED HEADER -->
     <header class="header">
-      <img src="https://cdn-icons-png.flaticon.com/512/1803/1803612.png" alt="Logo" class="logo">
-      <h1>PrivacyNote</h1>
+      <div class="logo-container">
+        <img src="https://cdn-icons-png.flaticon.com/512/1803/1803612.png" alt="Logo" class="logo">
+        <div class="header-content">
+          <h1>PrivacyNote</h1>
+          <p class="tagline">Secure, Self-Destructing Messages</p>
+        </div>
+      </div>
     </header>
 
     <main>
       <section id="createNoteSection">
         <div class="form-group">
-          <label for="noteText">Write your secret note:</label>
+          <!-- <label for="noteText">Write your secret note:</label> -->
           <p class="description">Your note will self-destruct after being read</p>
           <textarea id="noteText" placeholder="Type your secret here..."></textarea>
         </div>
 
-        <!-- Settings Accordion loaded from external file -->
-        <div id="settings-container">
-          <!-- This will be populated by JavaScript -->
-        </div>
+        <div id="settings-container"></div>
 
         <div class="buttons">
           <button id="createNoteBtn" class="btn-primary">
@@ -53,9 +64,15 @@
       </section>
     </main>
 
+    <!-- IMPROVED FOOTER WITH TURNSTILE -->
     <footer class="footer">
-      <p>© 2025 PrivacyNote - Secure, self-destructing notes</p>
-      <p class="small">Notes are automatically deleted after being read</p>
+      <div class="footer-content">
+        <p>© 2025 PrivacyNote - Secure, self-destructing notes</p>
+        <p class="small">Notes are automatically deleted after being read</p>
+      </div>
+      <div class="turnstile-footer">
+        <div class="cf-turnstile" data-sitekey="1x00000000000000000000AA" data-theme="auto"></div>
+      </div>
     </footer>
   </div>
 
@@ -65,50 +82,30 @@
   <script type="module" src="./src/js/config.js"></script>
   <script type="module" src="./src/js/main.js"></script>
 
-  <script>
-  // Load settings component and initialize accordion
-  document.addEventListener('DOMContentLoaded', function() {
-    // Load settings HTML
-    fetch('./src/html/settings.html')
-      .then(response => response.text())
-      .then(html => {
-        document.getElementById('settings-container').innerHTML = html;
-        initializeAccordion();
-      })
-      .catch(error => {
-        console.error('Error loading settings:', error);
-        // Fallback settings HTML
-        document.getElementById('settings-container').innerHTML = `
-          <div class="settings-accordion">
-            <div class="accordion-header">
-              <i class="fas fa-cog"></i>
-              <span>Security Settings</span>
-              <i class="fas fa-chevron-down accordion-arrow"></i>
-            </div>
-            <div class="accordion-content">
-              <p>Settings failed to load. Using default settings.</p>
-            </div>
-          </div>
-        `;
-        initializeAccordion();
-      });
+  <script type="module">
+    import { SettingsUI } from './src/js/actions/settingsUI.js';
+    import { WhatsAppUI } from './src/js/services/whatsappUI.js';
 
-    function initializeAccordion() {
-      const accordionHeader = document.querySelector('.accordion-header');
-      const accordionContent = document.querySelector('.accordion-content');
-      const accordionArrow = document.querySelector('.accordion-arrow');
-      
-      if (accordionHeader && accordionContent) {
-        accordionHeader.addEventListener('click', function() {
-          accordionContent.classList.toggle('active');
-          if (accordionArrow) {
-            accordionArrow.classList.toggle('fa-chevron-down');
-            accordionArrow.classList.toggle('fa-chevron-up');
-          }
-        });
-      }
-    }
-  });
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Load settings
+      const settingsHtml = await SettingsUI.loadSettings();
+      document.getElementById('settings-container').innerHTML = settingsHtml;
+      SettingsUI.initializeAccordion();
+
+      // Initialize WhatsApp sharing
+      WhatsAppUI.init();
+
+      // Cloudflare Turnstile callback
+      window.onSuccess = function(token) {
+        console.log('Turnstile success:', token);
+        document.getElementById('createNoteBtn').disabled = false;
+      };
+
+      window.onError = function() {
+        console.log('Turnstile error');
+        document.getElementById('createNoteBtn').disabled = true;
+      };
+    });
   </script>
 </body>
 </html>

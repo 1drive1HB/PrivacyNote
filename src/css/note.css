@@ -1,0 +1,99 @@
+/* src/css/note.css */
+
+/* ==================================== */
+/* 1. STYLES TO MIMIC THE TEXTAREA AREA */
+/* ==================================== */
+
+/* This class directly copies the styling from textarea in components.css 
+   but applies it to the read-only <div> element for consistent width and look. */
+.note-content-area {
+  /* Dimensions/Layout */
+  width: 100%; 
+  min-height: 140px;
+  
+  /* Text/Font */
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  line-height: 1.6;
+  white-space: pre-wrap; /* Preserve formatting/newlines from the note content */
+  word-wrap: break-word;
+  color: var(--text);
+
+  /* Appearance */
+  border: 1px solid var(--border); 
+  border-radius: 8px; 
+  background: var(--card-bg); 
+  /* Important: Remove any outline/shadow behavior expected on active form elements */
+  outline: none; 
+  box-shadow: none;
+}
+
+/* Dark mode adjustments for the note content area */
+@media (prefers-color-scheme: dark) {
+    .note-content-area {
+        background: #4a5568; /* Matches the dark mode textarea background */
+        color: #f7fafc;
+        border-color: var(--dark-border);
+    }
+}
+
+
+/* ==================================== */
+/* 2. PAGE LAYOUT AND UTILITIES */
+/* ==================================== */
+
+/* Error Box (Moved from inline <style> block) */
+.error {
+    color: #f56565;
+    font-weight: 600;
+    padding: 1rem;
+    border: 2px solid #f56565;
+    border-radius: 8px;
+    background: rgba(245, 101, 101, 0.1);
+    text-align: left;
+    margin: 1.5rem 0; /* Add margin for spacing, filling the .form-group width */
+}
+
+.note-meta {
+  color: var(--text-light);
+  font-style: italic;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.back-link {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--primary);
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.home-link:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.home-link i {
+  font-size: 1.2rem;
+}
+
+/* Responsive adjustments (optional, but good practice) */
+@media (max-width: 480px) {
+  .home-link {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -40,12 +40,32 @@ CREATE TRIGGER trg_set_note_expiration
     FOR EACH ROW
     EXECUTE FUNCTION public.set_note_expiration();
 
+-- Trigger to delete note when read
+CREATE OR REPLACE FUNCTION public.delete_note_on_read()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- If read_count increases, delete the note
+    IF NEW.read_count > OLD.read_count THEN
+        DELETE FROM public.notes WHERE id = NEW.id;
+        RETURN NULL; -- Stop the update since we're deleting
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Apply trigger before update
+CREATE TRIGGER trg_delete_note_on_read
+    BEFORE UPDATE ON public.notes
+    FOR EACH ROW
+    EXECUTE FUNCTION public.delete_note_on_read();
+
 -- Simple expiration cleanup function
 CREATE OR REPLACE FUNCTION public.delete_expired_notes()
 RETURNS void AS $$
 BEGIN
     DELETE FROM public.notes 
-    WHERE expires_at < NOW() OR read_count > 0;
+    WHERE expires_at < NOW();
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -80,7 +100,6 @@ CREATE POLICY "Allow anonymous update" ON public.notes
 CREATE POLICY "Allow anonymous delete" ON public.notes
   FOR DELETE TO anon USING (true);
 
+--SELECT * FROM public.notes
 
-SELECT * FROM public.notes
-
-TRUNCATE TABLE public.notes
+--TRUNCATE TABLE public.notes

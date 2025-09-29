@@ -98,13 +98,13 @@ export class NoteAppService {
     }
   }
 
-  static shareViaWhatsApp(url, feedbackElement) {
-    try {
-      const message = `Check out this secret note: ${url}`;
-      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
-    } catch (err) {
-      DomAppService.showFeedback(feedbackElement, 'Failed to open WhatsApp', 'error');
-    }
-  }
+  // static shareViaWhatsApp(url, feedbackElement) {
+  //   try {
+  //     const message = `Check out this secret note: ${url}`;
+  //     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+  //     window.open(whatsappUrl, '_blank');
+  //   } catch (err) {
+  //     DomAppService.showFeedback(feedbackElement, 'Failed to open WhatsApp', 'error');
+  //   }
+  // }
 }

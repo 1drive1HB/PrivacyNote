@@ -36,7 +36,7 @@ jobs:
           const config = {
             supabaseUrl: '${{ secrets.SUPABASE_URL }}',
             supabaseKey: '${{ secrets.SUPABASE_KEY }}',
-            tableName: 'notes', // Hardcoded table name for production
+            tableName:'${{ secrets.SUPABASE_TABLE_M }}',
             cfTr: '${{ secrets.CF_TR }}', // Cloudflare Turnstile Site Key
             encryptionKey: '${{ secrets.ENCRYPTION_KEY }}', // Encryption Key
             isProduction: true

@@ -1,8 +1,11 @@
 // src/js/services/turnstile.js
+import { config } from '../config.js';
+
 export class TurnstileService {
-    static SITE_KEY = '1x00000000000000000000AA'; // Replace with your actual site key
+    static SITE_KEY = config.cfTr || '1x00000000000000000000AA'; // Fallback key
 
     static init() {
+        // Wait for config to be initialized before setting up
         this.setupTurnstileCallbacks();
     }
 
@@ -49,19 +52,27 @@ export class TurnstileService {
 
     static renderExplicit(containerId, options = {}) {
         if (window.turnstile) {
+            const siteKey = config.cfTr || this.SITE_KEY;
+            console.log('Rendering Turnstile with site key:', siteKey ? '***MASKED***' : 'MISSING');
+            
             return window.turnstile.render(`#${containerId}`, {
-                sitekey: this.SITE_KEY,
+                sitekey: siteKey,
                 theme: 'auto',
                 size: 'normal',
                 callback: window.onSuccess,
                 'error-callback': window.onError,
                 ...options
             });
+        } else {
+            console.error('Turnstile not loaded');
         }
     }
 }
 
-// Initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    TurnstileService.init();
+// Initialize when DOM is ready and config is loaded
+document.addEventListener('DOMContentLoaded', async () => {
+    // Wait a bit for config to initialize
+    setTimeout(() => {
+        TurnstileService.init();
+    }, 100);
 });

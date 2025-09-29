@@ -3,9 +3,6 @@ import { getSupabaseClient } from '../services/supabase.js';
 import { config } from '../config.js';
 import { encryptData, decryptData } from './cryptoActions.js';
 
-// Fixed encryption key
-const ENCRYPTION_KEY = 'temp-note-secure-key-2024';
-
 export const createNote = async (content, expiresIn, isEncrypted = false) => {
   try {
     console.log('=== NOTEQUERY CREATE NOTE CALLED ===');
@@ -19,7 +16,8 @@ export const createNote = async (content, expiresIn, isEncrypted = false) => {
     
     if (isEncrypted) {
       console.log('🔄 Encrypting content...');
-      processedContent = await encryptData(content, ENCRYPTION_KEY);
+      // Use ENCRYPTION_KEY from config
+      processedContent = await encryptData(content, config.encryptionKey);
       console.log('✅ Content encrypted');
     } else {
       console.log('🔓 No encryption - storing as plain text');
@@ -103,7 +101,8 @@ export const getNote = async (id) => {
     
     if (noteData.is_encrypted) {
       console.log('Decrypting encrypted content automatically...');
-      content = await decryptData(noteData.content, ENCRYPTION_KEY);
+      // Use ENCRYPTION_KEY from config
+      content = await decryptData(noteData.content, config.encryptionKey);
     }
 
     console.log('Marking note as read...');

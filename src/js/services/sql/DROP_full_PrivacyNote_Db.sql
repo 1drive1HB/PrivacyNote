@@ -1,78 +1,128 @@
--- Complete database cleanup script
--- Drop triggers first
-DROP TRIGGER IF EXISTS trg_set_note_expiration ON public.notes;
+-- Drop everything in reverse dependency order
 
--- Drop functions
-DROP FUNCTION IF EXISTS public.set_note_expiration() CASCADE;
-DROP FUNCTION IF EXISTS public.delete_expired_notes() CASCADE;
-DROP FUNCTION IF EXISTS public.get_note_content(UUID) CASCADE;
-
--- Drop policies (use the correct policy names from your current setup)
+-- Drop policies first
 DROP POLICY IF EXISTS "Allow anonymous insert" ON public.notes;
 DROP POLICY IF EXISTS "Allow anonymous select" ON public.notes;
 DROP POLICY IF EXISTS "Allow anonymous update" ON public.notes;
 DROP POLICY IF EXISTS "Allow anonymous delete" ON public.notes;
--- DROP POLICY IF EXISTS "Allow insert for anon" ON public.notes;
--- DROP POLICY IF EXISTS "Disallow direct delete" ON public.notes;
 
--- Disable RLS
-ALTER TABLE IF EXISTS public.notes DISABLE ROW LEVEL SECURITY;
+-- Drop triggers
+DROP TRIGGER IF EXISTS trg_delete_note_on_read ON public.notes;
+DROP TRIGGER IF EXISTS trg_set_note_expiration ON public.notes;
+
+-- Drop functions
+DROP FUNCTION IF EXISTS public.delete_note_on_read();
+DROP FUNCTION IF EXISTS public.set_note_expiration();
+DROP FUNCTION IF EXISTS public.delete_expired_notes();
+DROP FUNCTION IF EXISTS public.get_note_content(note_id UUID);
 
 -- Drop indexes
 DROP INDEX IF EXISTS public.idx_notes_expires_at;
-DROP INDEX IF EXISTS public.notes_pkey;
+--DROP INDEX IF EXISTS public.notes_pkey;
 
--- Finally drop the table
-DROP TABLE IF EXISTS public.notes CASCADE;
+-- Drop table last
+DROP TABLE IF EXISTS public.notes;
 
--- Verification query to confirm everything is dropped
-DO $$
+-- Now create everything fresh
+
+-- Main notes table
+CREATE TABLE public.notes (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    content TEXT NOT NULL,
+    is_encrypted BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    expires_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '24 hours'),
+    read_count INTEGER DEFAULT 0,
+    -- Boolean flags for expiration types
+    expires_in_24h BOOLEAN DEFAULT TRUE,
+    expires_in_48h BOOLEAN DEFAULT FALSE
+);
+
+CREATE UNIQUE INDEX notes_pkey ON public.notes USING btree (id);
+CREATE INDEX idx_notes_expires_at ON public.notes USING btree (expires_at);
+
+-- Trigger to set expiration based on boolean flags
+CREATE OR REPLACE FUNCTION public.set_note_expiration()
+RETURNS TRIGGER AS $$
 BEGIN
-    -- Check table
-    IF NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'notes') THEN
-        RAISE NOTICE '✓ Table public.notes dropped successfully';
+    IF NEW.expires_in_24h THEN
+        NEW.expires_at = NOW() + INTERVAL '24 hours';
+        NEW.expires_in_48h = FALSE;
+    ELSIF NEW.expires_in_48h THEN
+        NEW.expires_at = NOW() + INTERVAL '48 hours';
+        NEW.expires_in_24h = FALSE;
     ELSE
-        RAISE NOTICE '✗ Table public.notes still exists';
+        -- Default to 24h if no flag set
+        NEW.expires_at = NOW() + INTERVAL '24 hours';
+        NEW.expires_in_24h = TRUE;
     END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
-    -- Check functions
-    IF NOT EXISTS (SELECT FROM information_schema.routines WHERE routine_schema = 'public' AND routine_name = 'set_note_expiration') THEN
-        RAISE NOTICE '✓ Function public.set_note_expiration dropped successfully';
-    ELSE
-        RAISE NOTICE '✗ Function public.set_note_expiration still exists';
+-- Apply trigger before insert
+CREATE TRIGGER trg_set_note_expiration
+    BEFORE INSERT ON public.notes
+    FOR EACH ROW
+    EXECUTE FUNCTION public.set_note_expiration();
+
+-- Trigger to delete note when read
+CREATE OR REPLACE FUNCTION public.delete_note_on_read()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- If read_count increases, delete the note
+    IF NEW.read_count > OLD.read_count THEN
+        DELETE FROM public.notes WHERE id = NEW.id;
+        RETURN NULL; -- Stop the update since we're deleting
     END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
-    IF NOT EXISTS (SELECT FROM information_schema.routines WHERE routine_schema = 'public' AND routine_name = 'delete_expired_notes') THEN
-        RAISE NOTICE '✓ Function public.delete_expired_notes dropped successfully';
-    ELSE
-        RAISE NOTICE '✗ Function public.delete_expired_notes still exists';
-    END IF;
+-- Apply trigger before update
+CREATE TRIGGER trg_delete_note_on_read
+    BEFORE UPDATE ON public.notes
+    FOR EACH ROW
+    EXECUTE FUNCTION public.delete_note_on_read();
 
-    IF NOT EXISTS (SELECT FROM information_schema.routines WHERE routine_schema = 'public' AND routine_name = 'get_note_content') THEN
-        RAISE NOTICE '✓ Function public.get_note_content dropped successfully';
-    ELSE
-        RAISE NOTICE '✗ Function public.get_note_content still exists';
-    END IF;
+-- Simple expiration cleanup function
+CREATE OR REPLACE FUNCTION public.delete_expired_notes()
+RETURNS void AS $$
+BEGIN
+    DELETE FROM public.notes 
+    WHERE expires_at < NOW();
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
-    -- Check indexes
-    IF NOT EXISTS (SELECT FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'notes_pkey') THEN
-        RAISE NOTICE '✓ Index public.notes_pkey dropped successfully';
-    ELSE
-        RAISE NOTICE '✗ Index public.notes_pkey still exists';
-    END IF;
+-- Secure retrieval function
+CREATE OR REPLACE FUNCTION public.get_note_content(note_id UUID)
+RETURNS TABLE(content TEXT) AS $$
+BEGIN
+    RETURN QUERY
+    WITH upd AS (
+        UPDATE public.notes
+        SET read_count = read_count + 1
+        WHERE id = note_id
+        RETURNING content
+    )
+    SELECT content FROM upd;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
-    IF NOT EXISTS (SELECT FROM pg_indexes WHERE schemaname = 'public' AND indexname = 'idx_notes_expires_at') THEN
-        RAISE NOTICE '✓ Index public.idx_notes_expires_at dropped successfully';
-    ELSE
-        RAISE NOTICE '✗ Index public.idx_notes_expires_at still exists';
-    END IF;
+-- Enable RLS
+ALTER TABLE public.notes ENABLE ROW LEVEL SECURITY;
 
-    -- Check policies
-    IF NOT EXISTS (SELECT FROM pg_policies WHERE schemaname = 'public' AND tablename = 'notes') THEN
-        RAISE NOTICE '✓ All policies dropped successfully';
-    ELSE
-        RAISE NOTICE '✗ Some policies still exist';
-    END IF;
+-- Create proper policies for anonymous access
+CREATE POLICY "Allow anonymous insert" ON public.notes
+  FOR INSERT TO anon WITH CHECK (true);
 
-    RAISE NOTICE 'Database cleanup completed!';
-END $$;
+CREATE POLICY "Allow anonymous select" ON public.notes
+  FOR SELECT TO anon USING (true);
+
+CREATE POLICY "Allow anonymous update" ON public.notes
+  FOR UPDATE TO anon USING (true);
+
+CREATE POLICY "Allow anonymous delete" ON public.notes
+  FOR DELETE TO anon USING (true);

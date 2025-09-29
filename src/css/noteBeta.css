@@ -1,0 +1,208 @@
+/* src/css/note.css - Unified, Compact, and Mobile-Readability Optimized Styles */
+
+/* ==================================== */
+/* 1. ROOT VARIABLES & BASE STYLES */
+/* ==================================== */
+:root {
+  --primary: #4299e1; 
+  --primary-dark: #3182ce; 
+  --success: #48bb78; 
+  --error: #f56565;
+  --text: #2d3748; 
+  --text-light: #718096; 
+  --bg: #f5f7fa; 
+  --card-bg: #fff; 
+  --border: #e2e8f0; /* Grey line color */
+  --dark-bg: #1a202c; 
+  --dark-card: #28303e; 
+  --dark-text: #e2e8f0; 
+  --dark-border: #4a5568;
+}
+
+* { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0; 
+  padding: 1rem;
+  background: var(--bg); 
+  color: var(--text); 
+  min-height: 100vh; 
+  line-height: 1.4; 
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 800px;
+  background: var(--card-bg);
+  padding: 1.5rem 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  margin: 1rem 0;
+}
+
+/* --- MOBILE OPTIMIZATION FIX --- */
+@media (max-width: 600px) {
+  .container { 
+    padding: 1.5rem 1rem; /* More space on the sides for better flow */
+    margin: 0.5rem 0; /* Reduced top/bottom margin */
+  }
+}
+/* --- END MOBILE OPTIMIZATION FIX --- */
+
+
+/* Dark Mode Body/Container */
+@media (prefers-color-scheme: dark) {
+  body { background: var(--dark-bg); color: var(--dark-text); }
+  .container {
+    background: var(--dark-card);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .header { border-bottom-color: var(--dark-border); }
+  .footer { border-top-color: var(--dark-border); }
+}
+
+/* ==================================== */
+/* 2. HEADER AND FOOTER */
+/* ==================================== */
+.header {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border); 
+  padding-bottom: 0.75rem; /* Slightly reduced */
+  margin-bottom: 1.25rem; /* Slightly reduced */
+}
+.logo-container { display: flex; align-items: center; gap: 0.75rem; } 
+.logo { width: 32px; height: 32px; } 
+.header-content h1 { font-size: 1.4rem; margin: 0; color: var(--primary); } 
+.header-content .tagline { color: var(--text-light); font-size: 0.85rem; } 
+
+
+.footer {
+  border-top: 1px solid var(--border); 
+  padding-top: 1rem; 
+  margin-top: 2rem; 
+  text-align: center;
+}
+.footer-content p { 
+    margin: 0.4rem 0; 
+    font-size: 0.85rem; 
+    color: var(--text-light);
+}
+
+
+/* ==================================== */
+/* 3. MAIN MESSAGE CONTENT */
+/* ==================================== */
+
+/* .form-group provides margin around content area (like components.css) */
+.form-group {
+  margin-bottom: 1rem; 
+  margin-top: 1rem; 
+}
+
+/* * Successful Note Content (.note-content-area):
+ * CRITICAL FIX: Increased min-height to 200px for better length/mobile view.
+ */
+.note-content-area {
+  width: 100%; 
+  min-height: 200px; /* FIXED: Increased height for better readability/length */
+  
+  /* Text/Font */
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  line-height: 1.5; /* FIXED: Slightly larger line-height for readability */
+  white-space: pre-wrap; 
+  word-wrap: break-word;
+  color: var(--text);
+
+  /* Appearance */
+  border: 1px solid var(--border); 
+  border-radius: 8px; 
+  background: var(--card-bg); 
+  transition: all 0.3s ease;
+  display: block; 
+}
+
+/* Dark mode for successful note content */
+@media (prefers-color-scheme: dark) {
+    .note-content-area {
+        background: #4a5568; 
+        color: #f7fafc;
+        border-color: var(--dark-border);
+    }
+}
+
+/* * Error Box Styling (.error): Smaller, centered, less intrusive */
+.error {
+    color: var(--error);
+    font-weight: 600;
+    text-align: center; 
+
+    /* Dimensions and appearance for a smaller box */
+    width: 100%;
+    max-width: 400px; 
+    min-height: 80px; 
+    
+    /* Centering */
+    margin: 1.5rem auto; 
+    
+    padding: 1rem; 
+    border: 1px solid var(--error); 
+    border-radius: 8px;
+    background: rgba(245, 101, 101, 0.1); 
+    
+    /* Text layout */
+    font-size: 1rem;
+    font-family: inherit;
+    line-height: 1.4; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+}
+
+
+/* ==================================== */
+/* 4. META AND BACK BUTTON */
+/* ==================================== */
+
+.note-meta {
+  color: var(--text-light);
+  font-style: italic;
+  font-size: 0.85rem; 
+  text-align: center;
+  margin-top: 0.5rem; 
+}
+
+.back-link {
+  margin-top: 2rem; 
+  text-align: center;
+}
+
+/* Styling for the "Back" link button */
+.home-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px; 
+  background: var(--primary);
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600; 
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.home-link:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px); 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}

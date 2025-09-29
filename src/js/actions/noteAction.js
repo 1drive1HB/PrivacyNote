@@ -39,7 +39,7 @@ export class NoteAction {
 
   static getNoteIdFromUrl() {
     const noteId = new URLSearchParams(window.location.search).get('id');
-    if (!noteId) throw new Error('Missing note ID in URL');
+    if (!noteId) throw new Error('Missing URL / Message Deleted ');
     return noteId;
   }
 
@@ -54,10 +54,21 @@ export class NoteAction {
     }
   }
 
-  static handleError(error) {
+// src/js/actions/noteAction.js
+
+// ... (rest of the class is the same)
+
+static handleError(error) {
     const noteContentEl = document.getElementById('noteContent');
     if (noteContentEl) {
-      noteContentEl.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+      // 1. Remove the successful content class
+      noteContentEl.classList.remove('note-content-area'); 
+      
+      // 2. Add the error styling class (which now has width: 100% and min-height: 140px)
+      noteContentEl.classList.add('error');
+      
+      // 3. Inject the error message
+      noteContentEl.innerHTML = `Error: ${error.message}`;
     }
     console.error('NoteAction Error:', error);
   }

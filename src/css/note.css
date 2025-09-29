@@ -1,22 +1,27 @@
-/* src/css/note.css */
+/* src/css/note.css - Unified Styles for Note Viewing Page */
 
 /* ==================================== */
-/* 1. STYLES TO MIMIC THE TEXTAREA AREA */
+/* 1. CONTENT AREA STYLING (Mirrors index.html textarea) */
 /* ==================================== */
 
-/* This class directly copies the styling from textarea in components.css 
-   but applies it to the read-only <div> element for consistent width and look. */
+/* Mimics the .form-group wrapper margin from components.css */
+.form-group {
+  margin-bottom: 1.5rem;
+  margin-top: 1.5rem; 
+}
+
+/* This class copies the key styling of the <textarea> from components.css */
 .note-content-area {
-  /* Dimensions/Layout */
+  /* Dimensions/Layout - Ensures full width and consistent height */
   width: 100%; 
-  min-height: 140px;
+  min-height: 140px; 
   
   /* Text/Font */
   padding: 0.75rem;
   font-size: 1rem;
   font-family: inherit;
   line-height: 1.6;
-  white-space: pre-wrap; /* Preserve formatting/newlines from the note content */
+  white-space: pre-wrap; /* Preserve formatting/newlines */
   word-wrap: break-word;
   color: var(--text);
 
@@ -24,36 +29,46 @@
   border: 1px solid var(--border); 
   border-radius: 8px; 
   background: var(--card-bg); 
-  /* Important: Remove any outline/shadow behavior expected on active form elements */
   outline: none; 
   box-shadow: none;
+  transition: all 0.3s ease;
 }
 
 /* Dark mode adjustments for the note content area */
 @media (prefers-color-scheme: dark) {
     .note-content-area {
-        background: #4a5568; /* Matches the dark mode textarea background */
+        background: #4a5568; 
         color: #f7fafc;
         border-color: var(--dark-border);
     }
 }
 
-
-/* ==================================== */
-/* 2. PAGE LAYOUT AND UTILITIES */
-/* ==================================== */
-
-/* Error Box (Moved from inline <style> block) */
+/* Error Box Styling: Uses the same footprint as the note-content-area */
 .error {
-    color: #f56565;
+    color: var(--error);
     font-weight: 600;
-    padding: 1rem;
-    border: 2px solid #f56565;
+    
+    /* Dimensions and appearance match .note-content-area/textarea */
+    width: 100%;
+    min-height: 140px; 
+    padding: 0.75rem; 
+    border: 1px solid var(--error); 
     border-radius: 8px;
-    background: rgba(245, 101, 101, 0.1);
+    background: rgba(245, 101, 101, 0.1); 
     text-align: left;
-    margin: 1.5rem 0; /* Add margin for spacing, filling the .form-group width */
+    margin: 0; 
+    
+    /* Ensure text properties are consistent */
+    font-size: 1rem;
+    font-family: inherit;
+    line-height: 1.6;
+    display: block; 
 }
+
+
+/* ==================================== */
+/* 2. SPECIFIC PAGE LAYOUT ELEMENTS */
+/* ==================================== */
 
 .note-meta {
   color: var(--text-light);
@@ -68,6 +83,7 @@
   text-align: center;
 }
 
+/* Styling for the "Back" link button, mimicking btn-primary from components.css */
 .home-link {
   display: inline-flex;
   align-items: center;
@@ -77,6 +93,8 @@
   color: white;
   border-radius: 8px;
   text-decoration: none;
+  font-weight: 600; 
+  cursor: pointer;
   transition: all 0.3s ease;
 }
 
@@ -90,7 +108,10 @@
   font-size: 1.2rem;
 }
 
-/* Responsive adjustments (optional, but good practice) */
+/* ==================================== */
+/* 3. RESPONSIVENESS */
+/* ==================================== */
+
 @media (max-width: 480px) {
   .home-link {
     width: 100%;

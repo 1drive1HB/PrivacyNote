@@ -12,13 +12,9 @@
   
   <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1803/1803612.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Cloudflare Turnstile -->
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
   <div class="container">
-    <!-- IMPROVED HEADER -->
     <header class="header">
       <div class="logo-container">
         <img src="https://cdn-icons-png.flaticon.com/512/1803/1803612.png" alt="Logo" class="logo">
@@ -32,52 +28,58 @@
     <main>
       <section id="createNoteSection">
         <div class="form-group">
-          <!-- <label for="noteText">Write your secret note:</label> -->
           <p class="description">Your note will self-destruct after being read</p>
-          <textarea id="noteText" placeholder="Type your secret here..."></textarea>
-        </div>
-
-        <div id="settings-container"></div>
-
-        <div class="buttons">
-          <button id="createNoteBtn" class="btn-primary">
-            <i class="fas fa-lock"></i> Create Secure Note
-          </button>
-          <button id="clearBtn" class="btn-secondary">
-            <i class="fas fa-trash"></i> Clear All
-          </button>
-        </div>
-
-        <div id="linkContainer" class="hidden">
-          <div class="link-header">
-            <i class="fas fa-link"></i>
-            <strong>Your unique note link (click to copy):</strong>
+          <textarea id="noteText" placeholder="Type your message here..." maxlength="8000"></textarea>
+          <div class="char-counter">
+            <span id="charCount">0</span>/8000 characters (Max)
           </div>
-          <div id="noteLink" class="note-link"></div>
-          
-          <div class="whatsapp-share">
-            <button id="whatsappBtn" class="whatsapp-btn">
-              <i class="fab fa-whatsapp"></i> Share via WhatsApp
+
+          <div class="buttons">
+            <button id="createNoteBtn" class="btn-large">
+              <i class="fas fa-lock"></i> Create Secure Note
+            </button>
+            <button id="clearBtn" class="btn-small btn-secondary">
+              <i class="fas fa-trash"></i> Clear All
             </button>
           </div>
+
+          <div id="linkContainer" class="hidden">
+            <div class="link-header">
+              <i class="fas fa-link"></i>
+              <strong>Your unique note link (click to copy):</strong>
+            </div>
+            <div id="noteLink" class="note-link btn-full"></div>
+            
+            <div class="whatsapp-share">
+              <button id="whatsappBtn" class="whatsapp-btn">
+                <i class="fab fa-whatsapp"></i> Share via WhatsApp
+              </button>
+            </div>
+          </div>
+
+          <div id="settings-container"></div>
         </div>
       </section>
     </main>
-
-    <!-- IMPROVED FOOTER WITH TURNSTILE -->
-    <footer class="footer">
-      <div class="footer-content">
+  <!-- Side-by-Side Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <!-- Left side - Footer text -->
+      <div class="footer-text">
         <p>© 2025 PrivacyNote - Secure, self-destructing notes</p>
         <p class="small">Notes are automatically deleted after being read</p>
       </div>
-      <div class="turnstile-footer">
-        <div class="cf-turnstile" data-sitekey="1x00000000000000000000AA" data-theme="auto"></div>
+      
+      <!-- Right side - Turnstile container -->
+      <div class="footer-turnstile">
+        <div id="turnstileContainer"></div>
       </div>
-    </footer>
-  </div>
+    </div>
+  </footer>
 
   <div id="copyFeedback" class="copy-feedback hidden"></div>
 
+  <!-- Scripts -->
   <script src="./src/js/load-Env.js"></script>
   <script type="module" src="./src/js/config.js"></script>
   <script type="module" src="./src/js/main.js"></script>
@@ -85,26 +87,19 @@
   <script type="module">
     import { SettingsUI } from './src/js/actions/settingsUI.js';
     import { WhatsAppUI } from './src/js/services/whatsappUI.js';
+    import { TurnstileService } from './src/js/services/turnstile.js';
 
     document.addEventListener('DOMContentLoaded', async function() {
       // Load settings
       const settingsHtml = await SettingsUI.loadSettings();
       document.getElementById('settings-container').innerHTML = settingsHtml;
-      SettingsUI.initializeAccordion();
+      SettingsUI.initialize();
 
       // Initialize WhatsApp sharing
       WhatsAppUI.init();
 
-      // Cloudflare Turnstile callback
-      window.onSuccess = function(token) {
-        console.log('Turnstile success:', token);
-        document.getElementById('createNoteBtn').disabled = false;
-      };
-
-      window.onError = function() {
-        console.log('Turnstile error');
-        document.getElementById('createNoteBtn').disabled = true;
-      };
+      // Initialize Turnstile - it handles everything automatically
+      await TurnstileService.init();
     });
   </script>
 </body>

@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Secret Note</title>
   
-  <link rel="stylesheet" href="./src/css/noteBeta.css">  
+  <link rel="stylesheet" href="./src/css/base.css">
+  <link rel="stylesheet" href="./src/css/note.css">
   
   <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1803/1803612.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -24,18 +25,36 @@
 
     <main>
       <section id="noteContentSection">
+        <!-- Error Message Container -->
+        <div id="errorContainer" class="error-container hidden">
+          <h3><i class="fas fa-exclamation-triangle"></i> Error</h3>
+          <p id="errorMessage" class="error-message"></p>
+        </div>
+
+        <!-- Info Message Container (for "Message Deleted" etc) -->
+        <div id="infoContainer" class="info-container hidden">
+          <h3><i class="fas fa-info-circle"></i> Information</h3>
+          <p id="infoMessage" class="info-message"></p>
+        </div>
+
+        <!-- Note Content -->
         <div class="form-group">
-          <div id="noteContent" class="note-content-area">Loading...</div>
+          <div id="noteContent" class="note-content-area">
+            <div class="loading">
+              <i class="fas fa-spinner fa-spin"></i> Loading your secure note...
+            </div>
+          </div>
         </div>
         
         <p class="note-meta">This note will be destroyed after reading.</p>
-      </section>
 
-      <div class="back-link">
-        <a href="index.html" class="home-link">
-          <i class="fas fa-home"></i> Back to PrivacyNote
-        </a>
-      </div>
+        <!-- Back Link -->
+        <div class="back-link">
+          <a href="index.html" class="home-link">
+            <i class="fas fa-home"></i> Back to PrivacyNote
+          </a>
+        </div>
+      </section>
     </main>
 
     <footer class="footer">
@@ -49,5 +68,45 @@
   <script src="./src/js/load-Env.js"></script>
   <script type="module" src="./src/js/config.js"></script>
   <script type="module" src="./src/js/actions/noteAction.js"></script>
+
+  <script>
+    // Simple error handling for URL parameters
+    document.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const noteId = urlParams.get('id');
+      
+      if (!noteId) {
+        showError('Missing URL parameter / Message Deleted');
+        return;
+      }
+      
+      // Your existing note loading logic should go here
+      console.log('Loading note with ID:', noteId);
+    });
+
+    function showError(message) {
+      const errorContainer = document.getElementById('errorContainer');
+      const errorMessage = document.getElementById('errorMessage');
+      const noteContent = document.getElementById('noteContent');
+      
+      errorMessage.textContent = message;
+      errorContainer.classList.remove('hidden');
+      noteContent.classList.add('hidden');
+    }
+
+    function showInfo(message) {
+      const infoContainer = document.getElementById('infoContainer');
+      const infoMessage = document.getElementById('infoMessage');
+      const noteContent = document.getElementById('noteContent');
+      
+      infoMessage.textContent = message;
+      infoContainer.classList.remove('hidden');
+      noteContent.classList.add('hidden');
+    }
+
+    // Make functions globally available for your noteAction.js
+    window.showError = showError;
+    window.showInfo = showInfo;
+  </script>
 </body>
 </html>

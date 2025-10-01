@@ -6,7 +6,10 @@ public/env.js
 #src/js/load-env.js
 public/
 private/
-
+.gemini/
+gemini/
+.vscode/
+vscode/
 # Temporary files
 src/css/.ttt.md
 

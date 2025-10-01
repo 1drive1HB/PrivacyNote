@@ -1,4 +1,4 @@
-//src\js\actions\noteQuery.js
+// src/js/actions/noteQuery.js
 import { getSupabaseClient } from '../services/supabase.js';
 import { config } from '../config.js';
 import { encryptData, decryptData } from './cryptoActions.js';
@@ -16,7 +16,6 @@ export const createNote = async (content, expiresIn, isEncrypted = false) => {
     
     if (isEncrypted) {
       console.log('🔄 Encrypting content...');
-      // Use ENCRYPTION_KEY from config
       processedContent = await encryptData(content, config.encryptionKey);
       console.log('✅ Content encrypted');
     } else {
@@ -101,7 +100,6 @@ export const getNote = async (id) => {
     
     if (noteData.is_encrypted) {
       console.log('Decrypting encrypted content automatically...');
-      // Use ENCRYPTION_KEY from config
       content = await decryptData(noteData.content, config.encryptionKey);
     }
 

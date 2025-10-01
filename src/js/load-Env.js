@@ -1,4 +1,4 @@
-// src\js\load-Env.js
+// src/js/load-Env.js
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     // Check if we're in production (GitHub Pages)
@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       SUPABASE_KEY: env.SUPABASE_KEY,
       SUPABASE_TABLE_M: env.SUPABASE_TABLE_M,
       CF_TR: env.CF_TR,
+      CF_SECRET_KEY: env.CF_SECRET_KEY, // ADD THIS LINE
       ENCRYPTION_KEY: env.ENCRYPTION_KEY
     };
     console.log('✅ Local environment loaded successfully');

@@ -4,12 +4,21 @@ import { DomAppService } from './domApp_service.js';
 console.log('=== NOTEAPP SERVICE LOADED ===');
 export class NoteAppService {
   static getEnvironment() {
-    const isLocal = window.location.hostname === 'localhost' || 
-                   window.location.hostname === '127.0.0.1';
+      const hostname = window.location.hostname;
+      const href = window.location.href;
+
+      const isLocalhost = hostname === 'localhost' ||
+                          hostname === '127.0.0.1' ||
+                          hostname === '[::]' ||
+                          href.includes('http://localhost:8080') ||
+                          href.includes('http://[::]:8080') ||
+                          href.includes('http://localhost:8080/note.html') ||
+                          href.includes('http://localhost:8080/index.html');
+
     const isGitHubPages = window.location.hostname.includes('github.io');
     
     return {
-      isLocal,
+      isLocalhost,
       isGitHubPages,
       basePath: isGitHubPages ? '/PrivacyNote' : '',
       assetsPath: isGitHubPages ? '/PrivacyNote' : ''
@@ -80,9 +89,9 @@ export class NoteAppService {
 
   static generateNoteUrl(noteId, isEncrypted, env) {
     let url = `${window.location.origin}${env.basePath}/note.html?id=${noteId}`;
-    if (isEncrypted) {
-      url += '&encrypted=true';
-    }
+    // if (isEncrypted) {
+    //   url += '&encrypted=true';
+    // }
     return url;
   }
 
@@ -93,18 +102,13 @@ export class NoteAppService {
     
     elements.noteLink.onclick = () => DomAppService.copyToClipboard(url, elements.copyFeedback);
     
+    // if (elements.whatsappBtn) {
+    //   elements.whatsappBtn.onclick = () => this.shareViaWhatsApp(url, elements.copyFeedback);
+    // }
+    // With this:
     if (elements.whatsappBtn) {
-      elements.whatsappBtn.onclick = () => this.shareViaWhatsApp(url, elements.copyFeedback);
-    }
+      elements.whatsappBtn.setAttribute('data-url', url);
+  // The click handler is already set up by WhatsAppUI
+}
   }
-
-  // static shareViaWhatsApp(url, feedbackElement) {
-  //   try {
-  //     const message = `Check out this secret note: ${url}`;
-  //     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-  //     window.open(whatsappUrl, '_blank');
-  //   } catch (err) {
-  //     DomAppService.showFeedback(feedbackElement, 'Failed to open WhatsApp', 'error');
-  //   }
-  // }
 }

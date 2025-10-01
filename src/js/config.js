@@ -1,9 +1,10 @@
-//src\js\config.js
+// src/js/config.js
 const config = {
   supabaseUrl: '',
   supabaseKey: '',
   tableName: '', // Default table name notes
   cfTr: '',
+  cfSecretKey: '', // ADD THIS LINE
   encryptionKey: '',
   isProduction: false
 };
@@ -23,9 +24,10 @@ export const initializeConfig = async () => {
       config.supabaseKey = window.__ENV.SUPABASE_KEY || '';
       config.tableName = window.__ENV.SUPABASE_TABLE_M || '';
       config.cfTr = window.__ENV.CF_TR || '';
+      config.cfSecretKey = window.__ENV.CF_SECRET_KEY || ''; // ADD THIS LINE
       config.encryptionKey = window.__ENV.ENCRYPTION_KEY || '';
       
-      // Determine if running in production (not localhost/127.0.0.1)
+   // Determine if running in production (not localhost/127.0.0.1)
       const hostname = window.location.hostname;
       const isLocalhost = hostname === 'localhost' || 
                          hostname === '127.0.0.1' || 
@@ -44,6 +46,7 @@ export const initializeConfig = async () => {
       encryptionKey: config.encryptionKey ? '***MASKED***' : 'MISSING',
       supabaseUrl: config.supabaseUrl ? '***MASKED***' : 'MISSING',
       cfTr: config.cfTr ? '***MASKED***' : 'MISSING',
+      cfSecretKey: config.cfSecretKey ? '***MASKED***' : 'MISSING', // ADD THIS LINE
       tableName: config.tableName ? '***MASKED***' : 'MISSING'
     });
 

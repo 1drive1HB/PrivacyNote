@@ -37,6 +37,7 @@ jobs:
             supabaseKey: '${{ secrets.SUPABASE_KEY }}',
             tableName: '${{ secrets.SUPABASE_TABLE_M || 'notes' }}',
             cfTr: '${{ secrets.CF_TR }}',
+            cfSecretKey: '${{ secrets.CF_SECRET_KEY }}',
             encryptionKey: '${{ secrets.ENCRYPTION_KEY }}',
             isProduction: true
           };
@@ -50,6 +51,7 @@ jobs:
                 encryptionKey: config.encryptionKey ? '***MASKED***' : 'MISSING',
                 supabaseUrl: config.supabaseUrl ? '***MASKED***' : 'MISSING',
                 cfTr: config.cfTr ? '***MASKED***' : 'MISSING',
+                cfSecretKey: config.cfSecretKey ? '***MASKED***' : 'MISSING',
                 tableName: config.tableName ? '***MASKED***' : 'MISSING'
               });
               return config;

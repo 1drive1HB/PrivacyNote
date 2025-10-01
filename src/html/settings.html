@@ -1,30 +1,38 @@
-<!-- src/html/settings.html -->
+<!-- settings.html -->
 <div class="settings-accordion">
   <div class="accordion-header">
-    <i class="fas fa-cog"></i>
-    <span>Security Settings</span>
+    <div class="header-content">
+      <i class="fas fa-shield-alt"></i>
+      Security Settings
+    </div>
     <i class="fas fa-chevron-down accordion-arrow"></i>
   </div>
   <div class="accordion-content">
     <div class="settings-grid">
       <div class="setting-group">
-        <label class="setting-label">Encryption</label>
+        <div class="setting-label">
+          <i class="fas fa-lock"></i>
+          Encryption
+        </div>
         <div class="radio-group">
           <label class="radio-label">
             <input type="radio" name="encryption" value="true" checked>
             <span class="radio-custom"></span>
-            <span class="radio-text">Encryption</span>
+            <span class="radio-text">Enable</span>
           </label>
           <label class="radio-label">
             <input type="radio" name="encryption" value="false">
             <span class="radio-custom"></span>
-            <span class="radio-text">No Encryption</span>
+            <span class="radio-text">Disable</span>
           </label>
         </div>
       </div>
 
       <div class="setting-group">
-        <label class="setting-label">Expiration Time</label>
+        <div class="setting-label">
+          <i class="fas fa-clock"></i>
+          Expiration Time
+        </div>
         <div class="radio-group">
           <label class="radio-label">
             <input type="radio" name="expiration" value="24h" checked>

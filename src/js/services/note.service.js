@@ -14,14 +14,26 @@ export class NoteService {
     };
   }
 
-  // Note Creation
+  // Note Creation - FIXED VERSION
   static async createNote(content, settings) {
     try {
-      console.log('Creating note with settings:', settings);
+      console.log('📝 Creating note with settings:', settings);
+      console.log('🔐 Encryption setting:', {
+        raw: settings.encryption,
+        type: typeof settings.encryption
+      });
 
       const env = this.getEnvironment();
-      const isEncrypted = settings.encryption === 'true';
-      const expiresIn = settings.expiration === '48h' ? 48 * 60 * 60 : 24 * 60 * 60;
+
+      // FIX: Remove the string comparison - settings.encryption is already boolean
+      const isEncrypted = Boolean(settings.encryption);
+      const expiresIn = settings.expiration === '48h' ? 172800 : 86400; // 48h or 24h in seconds
+
+      console.log('🎯 Final parameters:', {
+        contentLength: content.length,
+        isEncrypted,
+        expiresIn
+      });
 
       const { createNote } = await import('../actions/noteQuery.js');
       const newNote = await createNote(content, expiresIn, isEncrypted);
@@ -43,9 +55,9 @@ export class NoteService {
     let url = `${window.location.origin}${env.basePath}/note.html?id=${noteId}`;
 
     // Add encryption key to URL hash for true E2E encryption
-    if (isEncrypted && config.encryptionKey) {
-      url += `#key=${encodeURIComponent(config.encryptionKey)}`;
-    }
+    // if (isEncrypted && config.encryptionKey) {
+    //   url += `#key=${encodeURIComponent(config.encryptionKey)}`;
+    // }
 
     return url;
   }

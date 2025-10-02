@@ -162,6 +162,8 @@ class PrivacyNoteApp {
         DomService.clearUI(this.elements);
         if (this.settingsLoaded) {
             SettingsUI.resetSettings();
+            // NEW: Close the accordion when clearing
+            SettingsUI.closeAccordion();
         }
     }
 }

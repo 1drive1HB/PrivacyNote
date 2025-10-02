@@ -3,21 +3,34 @@ const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 const salt = encoder.encode('secure-note-salt')
 
-export const encryptData = async (text, password = null) => {
+export const encryptData = async (text, useEncryption = false) => {
   try {
-    // Use provided password or config encryption key
-    const encryptionKey = password || '';
-
-    if (!encryptionKey) {
-      console.log('🔓 No encryption key provided - using base64 encoding');
-      return btoa(unescape(encodeURIComponent(text)));
+    if (!useEncryption) {
+      console.log('🔓 Encryption disabled - storing as PLAIN TEXT');
+      return text; // Return plain text when encryption is disabled
     }
 
-    console.log('🔐 Encrypting with key:', encryptionKey ? '***MASKED***' : 'MISSING');
+    console.log('🔐 Encrypting with config ENCRYPTION_KEY');
+
+    // Import your existing config
+    const { config } = await import('../config.js');
+    const encryptionKey = config.encryptionKey;
+
+    // Ensure key is proper length for AES (16 or 32 bytes)
+    let keyBytes = encoder.encode(encryptionKey);
+
+    // Pad or truncate to 32 bytes (256 bits)
+    if (keyBytes.length < 32) {
+      const padded = new Uint8Array(32);
+      padded.set(keyBytes);
+      keyBytes = padded;
+    } else if (keyBytes.length > 32) {
+      keyBytes = keyBytes.slice(0, 32);
+    }
 
     const keyMaterial = await crypto.subtle.importKey(
       'raw',
-      encoder.encode(encryptionKey),
+      keyBytes,
       'PBKDF2',
       false,
       ['deriveKey']
@@ -38,37 +51,50 @@ export const encryptData = async (text, password = null) => {
       encoder.encode(text)
     );
 
-    return JSON.stringify({
+    const result = JSON.stringify({
       iv: Array.from(iv),
       data: Array.from(new Uint8Array(encrypted))
     });
+
+    console.log('✅ Encryption successful');
+    return result;
+
   } catch (error) {
-    console.error('❌ Encryption failed, falling back to base64:', error);
-    return btoa(unescape(encodeURIComponent(text)));
+    console.error('❌ Encryption failed, storing as plain text:', error);
+    return text; // Fallback to plain text
   }
 }
 
-export const decryptData = async (encrypted, password = null) => {
+export const decryptData = async (encrypted, useEncryption = false) => {
   try {
-    // Use provided password or config encryption key
-    const decryptionKey = password || '';
-
-    if (!decryptionKey) {
-      console.log('🔓 No decryption key provided - trying base64 decoding');
-      try {
-        return decodeURIComponent(escape(atob(encrypted)));
-      } catch {
-        throw new Error('Unable to decrypt: no password provided');
-      }
+    if (!useEncryption) {
+      console.log('🔓 No encryption - returning plain text');
+      return encrypted; // Return as-is when no encryption
     }
 
-    console.log('🔐 Decrypting with key:', decryptionKey ? '***MASKED***' : 'MISSING');
+    console.log('🔐 Decrypting with config ENCRYPTION_KEY');
+
+    // Import your existing config
+    const { config } = await import('../config.js');
+    const decryptionKey = config.encryptionKey;
+
+    // Ensure key is proper length for AES (16 or 32 bytes)
+    let keyBytes = encoder.encode(decryptionKey);
+
+    // Pad or truncate to 32 bytes (256 bits)
+    if (keyBytes.length < 32) {
+      const padded = new Uint8Array(32);
+      padded.set(keyBytes);
+      keyBytes = padded;
+    } else if (keyBytes.length > 32) {
+      keyBytes = keyBytes.slice(0, 32);
+    }
 
     const { iv, data } = JSON.parse(encrypted);
 
     const keyMaterial = await crypto.subtle.importKey(
       'raw',
-      encoder.encode(decryptionKey),
+      keyBytes,
       'PBKDF2',
       false,
       ['deriveKey']
@@ -89,15 +115,12 @@ export const decryptData = async (encrypted, password = null) => {
     );
 
     return decoder.decode(decrypted);
+
   } catch (error) {
     console.error('❌ Decryption failed:', error);
 
-    // Try base64 fallback if AES decryption fails
-    try {
-      console.log('🔄 Trying base64 fallback decryption');
-      return decodeURIComponent(escape(atob(encrypted)));
-    } catch (fallbackError) {
-      throw new Error('Unable to decrypt: invalid key or corrupted data');
-    }
+    // If decryption fails, try to return as plain text
+    console.log('🔄 Returning as plain text (decryption failed)');
+    return encrypted;
   }
 }

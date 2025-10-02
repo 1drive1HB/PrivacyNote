@@ -6,8 +6,12 @@ import { encryptData, decryptData } from './cryptoActions.js';
 export const createNote = async (content, expiresIn, isEncrypted = false) => {
   try {
     console.log('=== NOTEQUERY CREATE NOTE CALLED ===');
-    console.log('Parameters received:', { contentLength: content.length, expiresIn, isEncrypted });
-    console.log('Encryption key available:', config.encryptionKey ? 'YES' : 'NO');
+    console.log('Parameters received:', {
+      contentLength: content.length,
+      expiresIn,
+      isEncrypted,
+      sampleContent: content.substring(0, 20) + '...'
+    });
 
     const supabase = await getSupabaseClient();
     if (!supabase) throw new Error('Supabase client not initialized');
@@ -16,15 +20,13 @@ export const createNote = async (content, expiresIn, isEncrypted = false) => {
 
     if (isEncrypted) {
       console.log('🔄 Encrypting content...');
-
-      if (!config.encryptionKey) {
-        console.warn('⚠️ No encryption key found, storing as plain text');
-      } else {
-        processedContent = await encryptData(content, config.encryptionKey);
-        console.log('✅ Content encrypted');
-      }
+      processedContent = await encryptData(content, true);
+      console.log('✅ Content encrypted:', processedContent !== content ? 'YES' : 'NO');
+      console.log('🔐 Encrypted sample:', processedContent.substring(0, 50) + '...');
     } else {
-      console.log('🔓 No encryption - storing as plain text');
+      console.log('🔓 Encryption disabled - storing as PLAIN TEXT');
+      processedContent = await encryptData(content, false); // This will return plain text
+      console.log('📝 Plain text sample:', processedContent.substring(0, 20) + '...');
     }
 
     const expiresIn24h = expiresIn === 24 * 60 * 60;
@@ -33,7 +35,8 @@ export const createNote = async (content, expiresIn, isEncrypted = false) => {
     console.log('Inserting into database with settings:', {
       is_encrypted: isEncrypted,
       expires_in_24h: expiresIn24h,
-      expires_in_48h: expiresIn48h
+      expires_in_48h: expiresIn48h,
+      content_type: isEncrypted ? 'encrypted' : 'plain_text'
     });
 
     const { data, error } = await supabase
@@ -73,7 +76,6 @@ export const getNote = async (id) => {
     if (!supabase) throw new Error('Supabase client not initialized');
 
     console.log('Retrieving note:', id);
-    console.log('Encryption key available for decryption:', config.encryptionKey ? 'YES' : 'NO');
 
     const { data: noteData, error: fetchError } = await supabase
       .from(config.tableName)
@@ -96,6 +98,7 @@ export const getNote = async (id) => {
       id: note.id,
       is_encrypted: note.is_encrypted,
       read_count: note.read_count,
+      content_sample: note.content.substring(0, 50) + '...',
       expired: new Date(note.expires_at) < new Date()
     });
 
@@ -113,19 +116,18 @@ export const getNote = async (id) => {
 
     if (note.is_encrypted) {
       console.log('🔓 Decrypting encrypted content...');
-
-      if (!config.encryptionKey) {
-        console.error('❌ No encryption key available for decryption');
-        throw new Error('Unable to decrypt: encryption key not available');
-      }
-
       try {
-        content = await decryptData(note.content, config.encryptionKey);
+        content = await decryptData(note.content, true);
         console.log('✅ Content decrypted successfully');
+        console.log('📝 Decrypted sample:', content.substring(0, 20) + '...');
       } catch (decryptError) {
         console.error('❌ Decryption failed:', decryptError);
         throw new Error('Unable to decrypt this note. It may have been encrypted with a different key.');
       }
+    } else {
+      console.log('🔓 No encryption - using plain text');
+      content = await decryptData(note.content, false);
+      console.log('📝 Plain text sample:', content.substring(0, 20) + '...');
     }
 
     console.log('Marking note as read...');

@@ -1,4 +1,4 @@
-// settingsUI.js - Fixed version with accordion starting closed
+// settingsUI.js
 export class SettingsUI {
     static async loadSettings() {
         try {
@@ -51,7 +51,7 @@ export class SettingsUI {
             });
         });
 
-        // Start with accordion CLOSED (removed the auto-open code)
+        // Start with accordion CLOSED
         console.log('Accordion starts closed');
     }
 
@@ -134,19 +134,50 @@ export class SettingsUI {
     }
 
     static getCurrentSettings() {
-        const encryption = document.querySelector('[name="encryption"]:checked')?.value === 'true';
-        const expiration = document.querySelector('[name="expiration"]:checked')?.value || '24h';
+        // Debug: Check all radio elements
+        const allEncryptionRadios = document.querySelectorAll('[name="encryption"]');
+        console.log('🔍 All encryption radios:');
+        allEncryptionRadios.forEach(radio => {
+            console.log(`- ${radio.value}: checked=${radio.checked}, type=${typeof radio.value}`);
+        });
 
-        console.log('Current settings:', { encryption, expiration });
+        const encryptionElement = document.querySelector('[name="encryption"]:checked');
+        const expirationElement = document.querySelector('[name="expiration"]:checked');
+
+        // FIX: Proper boolean conversion
+        const encryption = encryptionElement ? encryptionElement.value === 'true' : true;
+        const expiration = expirationElement ? expirationElement.value : '24h';
+
+        console.log('🎯 Final settings:', {
+            encryption,
+            expiration,
+            encryptionType: typeof encryption
+        });
 
         return {
-            encryption,
-            expiration
+            encryption: encryption, // This is boolean true/false
+            expiration: expiration
         };
     }
 
     static resetSettings() {
         console.log('Resetting settings to defaults...');
         this.setDefaultSettings();
+    }
+
+    // NEW: Method to close accordion
+    static closeAccordion() {
+        const accordionContent = document.querySelector('.accordion-content');
+        const accordionArrow = document.querySelector('.accordion-arrow');
+
+        if (accordionContent) {
+            accordionContent.classList.remove('active');
+        }
+
+        if (accordionArrow) {
+            accordionArrow.className = 'fas fa-chevron-down accordion-arrow';
+        }
+
+        console.log('Accordion closed');
     }
 }

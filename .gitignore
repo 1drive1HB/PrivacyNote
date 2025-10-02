@@ -6,13 +6,10 @@ public/env.js
 #src/js/load-env.js
 public/
 private/
-.gemini/
-gemini/
-.vscode/
-vscode/
+/.vscode/
 # Temporary files
 src/css/.ttt.md
-
+/.gemini/
 # System files
 .DS_Store
 node_modules/

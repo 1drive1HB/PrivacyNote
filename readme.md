@@ -7,7 +7,7 @@ A secure, self-destructing note sharing application with end-to-end encryption.
 ## Features
 
 - 🔒 Client-side encryption (AES-256)
-- ⏱️ Self-destructing notes
+- ⏱️ Self-destructing notes with additional settings
 - 📱 Mobile-friendly UI
 - 🌓 Dark mode support
 - 📋 One-click copy & share

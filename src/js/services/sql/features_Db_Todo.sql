@@ -1,1 +1,0 @@
--- trigger , delete instant after FLAG = 1 

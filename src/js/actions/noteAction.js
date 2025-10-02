@@ -39,24 +39,25 @@ export class NoteAction {
 
   static getNoteIdFromUrl() {
     const noteId = new URLSearchParams(window.location.search).get('id');
-    if (!noteId) throw new Error('Missing URL / Message Deleted ');
+    if (!noteId) 
+    //throw new Error('Missing URL 2/ Message Deleted ');
+    console.log('Missing URL parameter / Message Deleted');
     return noteId;
   }
 
   static async getNoteContent(noteId) {
     try {
       const noteQuery = await import('./noteQuery.js');
-      // No password needed - encryption is handled automatically
-      return await noteQuery.getNote(noteId);
+      const note = await noteQuery.getNote(noteId);
+      if (!note) {
+        throw new Error('This note has been read and destroyed.');
+      }
+      return note;
     } catch (e) {
-      console.error('Failed to import noteQuery:', e);
-      throw new Error('Failed to load application resources');
+      console.error('Failed to import or get noteQuery:', e);
+      throw new Error(e.message || 'Failed to load application resources');
     }
   }
-
-// src/js/actions/noteAction.js
-
-// ... (rest of the class is the same)
 
 static handleError(error) {
     const noteContentEl = document.getElementById('noteContent');

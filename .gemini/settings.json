@@ -1,0 +1,36 @@
+{
+   "mcpServers": {
+      "context7": {
+         "httpUrl": "https://mcp.context7.com/mcp",
+         "headers": {
+            "Authorization": "@{CONTEXT7_API_KEY}",
+            "Accept": "application/json, text/event-stream"
+         }
+      },
+      "exa": {
+         "httpUrl": "https://mcp.exa.ai/mcp",
+         "headers": {
+            "Authorization": "@{EXA_API_KEY_MCP}"
+         }
+      },
+      "github": {
+         "httpUrl": "https://api.githubcopilot.com/mcp/",
+         "headers": {
+            "Authorization": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+         },
+         "timeout": 5000
+      },
+      "gitmcp": {
+         "type": "sse",
+         "url": "https://gitmcp.io/1drive1HB/PrivacyNote/"
+      }
+   },
+   "settings": {
+      "timeout": 30000,
+      "retries": 3,
+      "logging": true
+   },
+   "environment": {
+      "USE_CACHE": true
+   }
+}

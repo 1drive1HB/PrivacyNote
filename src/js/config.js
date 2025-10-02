@@ -2,9 +2,9 @@
 const config = {
   supabaseUrl: '',
   supabaseKey: '',
-  tableName: '', // Default table name notes
+  tableName: '',
   cfTr: '',
-  cfSecretKey: '', // ADD THIS LINE
+  cfSecretKey: '',
   encryptionKey: '',
   isProduction: false
 };
@@ -46,7 +46,7 @@ export const initializeConfig = async () => {
       encryptionKey: config.encryptionKey ? '***MASKED***' : 'MISSING',
       supabaseUrl: config.supabaseUrl ? '***MASKED***' : 'MISSING',
       cfTr: config.cfTr ? '***MASKED***' : 'MISSING',
-      cfSecretKey: config.cfSecretKey ? '***MASKED***' : 'MISSING', // ADD THIS LINE
+      cfSecretKey: config.cfSecretKey ? '***MASKED***' : 'MISSING',
       tableName: config.tableName ? '***MASKED***' : 'MISSING'
     });
 

@@ -90,7 +90,7 @@ export class NoteAppService {
   static generateNoteUrl(noteId, isEncrypted, env) {
     let url = `${window.location.origin}${env.basePath}/note.html?id=${noteId}`;
     // if (isEncrypted) {
-    //   url += '&encrypted=true';
+    //   url += '&encrypted=true'; // for DEV
     // }
     return url;
   }
@@ -108,7 +108,7 @@ export class NoteAppService {
     // With this:
     if (elements.whatsappBtn) {
       elements.whatsappBtn.setAttribute('data-url', url);
-  // The click handler is already set up by WhatsAppUI
-}
+    // The click handler is already set up by WhatsAppUI
+    }
   }
 }

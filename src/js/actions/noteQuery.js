@@ -70,15 +70,18 @@ export const getNote = async (id) => {
       .from(config.tableName)
       .select('*')
       .eq('id', id)
-      .single();
+      // FIX: Use maybeSingle() to prevent "Cannot coerce..." error when no row is found.
+      .maybeSingle();
 
     if (fetchError) {
       console.error('Fetch error:', fetchError);
-      throw new Error(fetchError.message || 'Note not found');
+      // Throw a specific error for better handling in noteAction.js
+      throw new Error(fetchError.message || 'Database fetch failed (406 error)');
     }
 
     if (!noteData) {
-      throw new Error('Note not found');
+      // Return null if note is not found. This is now safe due to maybeSingle().
+      return null;
     }
 
     console.log('Note found:', {

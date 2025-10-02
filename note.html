@@ -76,11 +76,11 @@
       const noteId = urlParams.get('id');
       
       if (!noteId) {
-        showError('Missing URL parameter / Message Deleted');
+        showError('Message Deleted');
+        console.log('Missing URL parameter / Message Deleted');
         return;
       }
       
-      // Your existing note loading logic should go here
       console.log('Loading note with ID:', noteId);
     });
 
@@ -103,7 +103,6 @@
       infoContainer.classList.remove('hidden');
       noteContent.classList.add('hidden');
     }
-
     // Make functions globally available for your noteAction.js
     window.showError = showError;
     window.showInfo = showInfo;

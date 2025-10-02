@@ -1,65 +1,103 @@
-//src\js\actions\cryptoActions.js
+// src/js/actions/cryptoActions.js
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 const salt = encoder.encode('secure-note-salt')
 
-export const encryptData = async (text, password) => {
-  if (!password) return btoa(unescape(encodeURIComponent(text)))
+export const encryptData = async (text, password = null) => {
+  try {
+    // Use provided password or config encryption key
+    const encryptionKey = password || '';
 
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(password),
-    'PBKDF2',
-    false,
-    ['deriveKey']
-  )
+    if (!encryptionKey) {
+      console.log('🔓 No encryption key provided - using base64 encoding');
+      return btoa(unescape(encodeURIComponent(text)));
+    }
 
-  const key = await crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
-    keyMaterial,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt', 'decrypt']
-  )
+    console.log('🔐 Encrypting with key:', encryptionKey ? '***MASKED***' : 'MISSING');
 
-  const iv = crypto.getRandomValues(new Uint8Array(12))
-  const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
-    key,
-    encoder.encode(text)
-  )
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(encryptionKey),
+      'PBKDF2',
+      false,
+      ['deriveKey']
+    );
 
-  return JSON.stringify({
-    iv: Array.from(iv),
-    data: Array.from(new Uint8Array(encrypted))
-  })
+    const key = await crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      encoder.encode(text)
+    );
+
+    return JSON.stringify({
+      iv: Array.from(iv),
+      data: Array.from(new Uint8Array(encrypted))
+    });
+  } catch (error) {
+    console.error('❌ Encryption failed, falling back to base64:', error);
+    return btoa(unescape(encodeURIComponent(text)));
+  }
 }
 
-export const decryptData = async (encrypted, password) => {
-  if (!password) return decodeURIComponent(escape(atob(encrypted)))
+export const decryptData = async (encrypted, password = null) => {
+  try {
+    // Use provided password or config encryption key
+    const decryptionKey = password || '';
 
-  const { iv, data } = JSON.parse(encrypted)
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw',
-    encoder.encode(password),
-    'PBKDF2',
-    false,
-    ['deriveKey']
-  )
+    if (!decryptionKey) {
+      console.log('🔓 No decryption key provided - trying base64 decoding');
+      try {
+        return decodeURIComponent(escape(atob(encrypted)));
+      } catch {
+        throw new Error('Unable to decrypt: no password provided');
+      }
+    }
 
-  const key = await crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
-    keyMaterial,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt', 'decrypt']
-  )
+    console.log('🔐 Decrypting with key:', decryptionKey ? '***MASKED***' : 'MISSING');
 
-  const decrypted = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: new Uint8Array(iv) },
-    key,
-    new Uint8Array(data)
-  )
+    const { iv, data } = JSON.parse(encrypted);
 
-  return decoder.decode(decrypted)
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(decryptionKey),
+      'PBKDF2',
+      false,
+      ['deriveKey']
+    );
+
+    const derivedKey = await crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+
+    const decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: new Uint8Array(iv) },
+      derivedKey,
+      new Uint8Array(data)
+    );
+
+    return decoder.decode(decrypted);
+  } catch (error) {
+    console.error('❌ Decryption failed:', error);
+
+    // Try base64 fallback if AES decryption fails
+    try {
+      console.log('🔄 Trying base64 fallback decryption');
+      return decodeURIComponent(escape(atob(encrypted)));
+    } catch (fallbackError) {
+      throw new Error('Unable to decrypt: invalid key or corrupted data');
+    }
+  }
 }

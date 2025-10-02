@@ -1,40 +1,56 @@
 {
-  "selectedAuthType": "api-key",
-  "model": {
-    "name": "gemini-2.5-pro"
-  },
-  "mcpServers": {
-    "context7": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp"
-      ],
-      "env": {
-        // This passes your API key from the .env file to the context7 process.
-        "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY_MCP}"
-      }
-    },
-    "github": {
-      "httpUrl": "https://api.githubcopilot.com/mcp/",
-      "headers": {
-        // Added 'Bearer ' prefix, which is required for GitHub/Copilot token authentication.
-        "Authorization": "Bearer ${GITHUB_PERSONAL_ACCESS_TOKEN}"
+   "mcpServers": {
+      "context7": {
+         "httpUrl": "https://mcp.context7.com/mcp",
+         "headers": {
+            // The placeholders @{...} and ${...} are client-specific features
+            // that allow substitution from environment variables or secret stores.
+            "Authorization": "@{CONTEXT7_API_KEY}",
+            "Accept": "application/json, text/event-stream"
+         }
       },
-      "timeout": 5000,
-      "trust": false 
-    },
-    "gitmcp": {
-      "type": "sse",
-      "url": "https://gitmcp.io/1drive1HB/PrivacyNote"
-    }
-  },
-  "settings": {
-    "timeout": 30000,
-    "retries": 3,
-    "logging": true
-  },
-  "environment": {
-    "USE_CACHE": true
-  }
+      "exa": {
+         "httpUrl": "https://mcp.exa.ai/mcp",
+         "headers": {
+            "Authorization": "@{EXA_API_KEY_MCP}"
+         }
+      },
+      "github": {
+         "httpUrl": "https://api.githubcopilot.com/mcp/",
+         "headers": {
+            "Authorization": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+         },
+         "timeout": 5000
+      },
+      "gitmcp": {
+         "type": "sse",
+         "transport": "sse",
+         "format": "mcp",
+         "url": "https://gitmcp.io/1drive1HB/PrivacyNote/"
+      },
+      // NEW SERVER ADDED
+      "sequential-thinking": {
+         "command": "npx",
+         "args": [
+            "-y",
+            "@modelcontextprotocol/server-sequential-thinking"
+         ]
+      }
+   },
+   "general": {
+      "outputFormat": "markdown",
+      "timeoutMs": 30000,
+      "retries": 3,
+      "useCache": true
+   },
+   "fileFiltering": {
+      "respectGitIgnore": true,
+      "respectGeminiIgnore": true
+   },
+   "chatCompression": {
+      "contextPercentageThreshold": 0.75
+   },
+   "advanced": {
+      "logLevel": "info"
+   }
 }

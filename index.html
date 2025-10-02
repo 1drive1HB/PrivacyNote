@@ -1,17 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PrivacyNote - Secure Self-Destructing Notes</title>
+
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://challenges.cloudflare.com https://esm.sh;
+    style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+    font-src 'self' https://cdnjs.cloudflare.com;
+    img-src 'self' https: data:;
+    connect-src 'self' https://*.supabase.co https://esm.sh;
+    frame-src https://challenges.cloudflare.com;
+  ">
+
   <!-- CSS Files -->
   <link rel="stylesheet" href="./src/css/base.css">
   <link rel="stylesheet" href="./src/css/components.css">
   <link rel="stylesheet" href="./src/css/settings.css">
-  
+
   <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1803/1803612.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
   <div class="container">
     <header class="header">
@@ -48,7 +61,7 @@
               <strong>Your unique note link (click to copy):</strong>
             </div>
             <div id="noteLink" class="note-link btn-full"></div>
-            
+
             <div class="whatsapp-share">
               <button id="whatsappBtn" class="whatsapp-btn">
                 <i class="fab fa-whatsapp"></i> Share via WhatsApp
@@ -60,46 +73,30 @@
         </div>
       </section>
     </main>
-  <!-- Side-by-Side Footer -->
-  <footer class="footer">
-    <div class="footer-content">
-      <!-- Left side - Footer text -->
-      <div class="footer-text">
-        <p>© 2025 PrivacyNote - Secure, self-destructing notes</p>
-        <p class="small">Notes are automatically deleted after being read</p>
-      </div>
-      
-      <!-- Right side - Turnstile container -->
-      <div class="footer-turnstile">
-        <div id="turnstileContainer"></div>
-      </div>
-    </div>
-  </footer>
 
-  <div id="copyFeedback" class="copy-feedback hidden"></div>
+    <!-- Side-by-Side Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <!-- Left side - Footer text -->
+        <div class="footer-text">
+          <p>© 2025 PrivacyNote - Secure, self-destructing notes</p>
+          <p class="small">Notes are automatically deleted after being read</p>
+        </div>
+
+        <!-- Right side - Turnstile container -->
+        <div class="footer-turnstile">
+          <div id="turnstileContainer"></div>
+        </div>
+      </div>
+    </footer>
+
+    <div id="copyFeedback" class="copy-feedback hidden"></div>
+  </div>
 
   <!-- Scripts -->
   <script src="./src/js/load-Env.js"></script>
   <script type="module" src="./src/js/config.js"></script>
   <script type="module" src="./src/js/main.js"></script>
-
-  <script type="module">
-    import { SettingsUI } from './src/js/actions/settingsUI.js';
-    import { WhatsAppUI } from './src/js/services/whatsappUI.js';
-    import { TurnstileService } from './src/js/services/turnstile.js';
-
-    document.addEventListener('DOMContentLoaded', async function() {
-      // Load settings
-      const settingsHtml = await SettingsUI.loadSettings();
-      document.getElementById('settings-container').innerHTML = settingsHtml;
-      SettingsUI.initialize();
-
-      // Initialize WhatsApp sharing
-      WhatsAppUI.init();
-
-      // Initialize Turnstile - it handles everything automatically
-      await TurnstileService.init();
-    });
-  </script>
 </body>
+
 </html>

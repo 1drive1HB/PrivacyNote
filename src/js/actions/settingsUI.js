@@ -1,4 +1,4 @@
-// settingsUI.js
+// settingsUI.js - Fixed version with accordion starting closed
 export class SettingsUI {
     static async loadSettings() {
         try {
@@ -11,72 +11,114 @@ export class SettingsUI {
     }
 
     static initialize() {
+        console.log('🔄 Initializing SettingsUI...');
         this.initializeAccordion();
         this.initializeRadioButtons();
         this.initializeCharacterCounter();
+        console.log('✅ SettingsUI initialized');
     }
 
     static initializeAccordion() {
-        document.addEventListener('click', (e) => {
-            if (e.target.closest('.accordion-header')) {
-                const header = e.target.closest('.accordion-header');
+        console.log('Setting up accordion...');
+
+        const accordionHeaders = document.querySelectorAll('.accordion-header');
+
+        accordionHeaders.forEach(header => {
+            // Remove any existing click listeners
+            header.replaceWith(header.cloneNode(true));
+        });
+
+        // Re-select after cloning
+        const newHeaders = document.querySelectorAll('.accordion-header');
+
+        newHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                console.log('Accordion clicked!');
                 const content = header.nextElementSibling;
                 const arrow = header.querySelector('.accordion-arrow');
-                
+
+                // Toggle active class
                 content.classList.toggle('active');
-                arrow.className = content.classList.contains('active') 
-                    ? 'fas fa-chevron-up accordion-arrow'
-                    : 'fas fa-chevron-down accordion-arrow';
-            }
+
+                // Update arrow
+                if (arrow) {
+                    arrow.className = content.classList.contains('active')
+                        ? 'fas fa-chevron-up accordion-arrow'
+                        : 'fas fa-chevron-down accordion-arrow';
+                }
+
+                console.log('Accordion state:', content.classList.contains('active'));
+            });
         });
+
+        // Start with accordion CLOSED (removed the auto-open code)
+        console.log('Accordion starts closed');
     }
 
     static initializeRadioButtons() {
+        console.log('Setting up radio buttons...');
+
+        // Set default settings first
+        this.setDefaultSettings();
+
+        // Then add change listeners
         document.addEventListener('change', (e) => {
             if (e.target.type === 'radio') {
                 const radio = e.target;
                 const groupName = radio.name;
-                
+
+                console.log('Radio changed:', groupName, radio.value);
+
                 // Update visual state for all radios in group
                 document.querySelectorAll(`[name="${groupName}"]`).forEach(r => {
                     const label = r.closest('.radio-label');
-                    label.classList.toggle('selected', r.checked);
+                    if (label) {
+                        label.classList.toggle('selected', r.checked);
+                    }
                 });
             }
         });
-
-        // Initialize current state with default values
-        this.setDefaultSettings();
     }
 
     static setDefaultSettings() {
+        console.log('Setting default settings...');
+
         // Set encryption to Enable and expiration to 24h by default
         const encryptionEnable = document.querySelector('[name="encryption"][value="true"]');
         const expiration24h = document.querySelector('[name="expiration"][value="24h"]');
-        
+
         if (encryptionEnable && expiration24h) {
             encryptionEnable.checked = true;
             expiration24h.checked = true;
-            
+
             // Update visual state
             document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
-                radio.closest('.radio-label').classList.add('selected');
+                const label = radio.closest('.radio-label');
+                if (label) {
+                    label.classList.add('selected');
+                }
             });
+
+            console.log('Default settings applied: encryption=true, expiration=24h');
+        } else {
+            console.warn('Could not find radio buttons for default settings');
         }
     }
 
     static initializeCharacterCounter() {
         const noteText = document.getElementById('noteText');
         const charCount = document.getElementById('charCount');
-        
+
         if (noteText && charCount) {
+            console.log('Setting up character counter...');
+
             // Initialize counter
             charCount.textContent = noteText.value.length.toLocaleString();
-            
-            noteText.addEventListener('input', function() {
+
+            noteText.addEventListener('input', function () {
                 const length = this.value.length;
                 charCount.textContent = length.toLocaleString();
-                
+
                 // Change color when approaching limit
                 if (length > 8000) {
                     charCount.style.color = '#dc2626';
@@ -86,23 +128,25 @@ export class SettingsUI {
                     charCount.style.color = '';
                 }
             });
+        } else {
+            console.warn('Character counter elements not found');
         }
     }
 
     static getCurrentSettings() {
+        const encryption = document.querySelector('[name="encryption"]:checked')?.value === 'true';
+        const expiration = document.querySelector('[name="expiration"]:checked')?.value || '24h';
+
+        console.log('Current settings:', { encryption, expiration });
+
         return {
-            encryption: document.querySelector('[name="encryption"]:checked')?.value === 'true',
-            expiration: document.querySelector('[name="expiration"]:checked')?.value || '24h'
+            encryption,
+            expiration
         };
     }
 
     static resetSettings() {
+        console.log('Resetting settings to defaults...');
         this.setDefaultSettings();
-        console.log('Settings reset to defaults');
     }
 }
-
-// Auto-initialize when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-    SettingsUI.initialize();
-});

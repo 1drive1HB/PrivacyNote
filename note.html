@@ -1,18 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Secret Note</title>
-  
+
+  <!-- In note.html head section -->
+  <meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-inline' https://esm.sh;
+  style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+  font-src 'self' https://cdnjs.cloudflare.com;
+  img-src 'self' https: data:;
+  connect-src 'self' https://*.supabase.co https://esm.sh;
+  ">
+
   <link rel="stylesheet" href="./src/css/base.css">
   <link rel="stylesheet" href="./src/css/note.css">
-  
+  <link rel="stylesheet" href="./src/css/settings.css">
+
   <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1803/1803612.png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
-  <div class="container"> 
+  <div class="container">
     <header class="header">
       <div class="logo-container">
         <img src="https://cdn-icons-png.flaticon.com/512/1803/1803612.png" alt="Logo" class="logo">
@@ -45,7 +58,7 @@
             </div>
           </div>
         </div>
-        
+
         <p class="note-meta">This note will be destroyed after reading.</p>
 
         <!-- Back Link -->
@@ -67,45 +80,16 @@
 
   <script src="./src/js/load-Env.js"></script>
   <script type="module" src="./src/js/config.js"></script>
-  <script type="module" src="./src/js/actions/noteAction.js"></script>
 
-  <script>
-    // Simple error handling for URL parameters
-    document.addEventListener('DOMContentLoaded', function() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const noteId = urlParams.get('id');
-      
-      if (!noteId) {
-        showError('Message Deleted');
-        console.log('Missing URL parameter / Message Deleted');
-        return;
-      }
-      
-      console.log('Loading note with ID:', noteId);
+  <!-- Use the new note.service.js instead of noteAction.js -->
+  <script type="module">
+    import { NoteService } from './src/js/services/note.service.js';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      console.log('=== NOTE PAGE LOADED - USING NOTE.SERVICE.JS ===');
+      await NoteService.viewNote();
     });
-
-    function showError(message) {
-      const errorContainer = document.getElementById('errorContainer');
-      const errorMessage = document.getElementById('errorMessage');
-      const noteContent = document.getElementById('noteContent');
-      
-      errorMessage.textContent = message;
-      errorContainer.classList.remove('hidden');
-      noteContent.classList.add('hidden');
-    }
-
-    function showInfo(message) {
-      const infoContainer = document.getElementById('infoContainer');
-      const infoMessage = document.getElementById('infoMessage');
-      const noteContent = document.getElementById('noteContent');
-      
-      infoMessage.textContent = message;
-      infoContainer.classList.remove('hidden');
-      noteContent.classList.add('hidden');
-    }
-    // Make functions globally available for your noteAction.js
-    window.showError = showError;
-    window.showInfo = showInfo;
   </script>
 </body>
+
 </html>

@@ -38,6 +38,10 @@ C:\Users\mat\Desktop\MAT_PrivN_pc_n\
 ├───public\                   # Ignored by Git
 └───src\
     ├───css\
+    │   ├───base.css
+    │   ├───components.css
+    │   ├───note.css
+    │   ├───settings.css
     │   └───styles.css
     ├───html\
     │   └───settings.html     # HTML for the settings UI
@@ -65,11 +69,13 @@ C:\Users\mat\Desktop\MAT_PrivN_pc_n\
     -   `config.js` then uses these variables to initialize the Supabase client.
 
 2.  **Note Creation (`index.html`)**:
-    -   `main.js` initializes the UI, loads the settings component, and sets up event listeners.
+    -   `main.js` is the main entry point. It initializes the UI, loads the settings component using `SettingsUI.js`, and sets up event listeners.
     -   The user enters a note, chooses encryption and expiration settings, and clicks "Create Secure Note".
     -   `noteApp_service.js` reads the settings and calls `createNote` from `noteQuery.js`.
     -   `noteQuery.js` **encrypts the content** (if enabled) using `cryptoActions.js` and sends it to the Supabase backend.
-    -   A unique URL for the note is generated and displayed to the user.
+    -   A unique URL for the note is generated and displayed to the user. `domApp_service.js` is used for DOM manipulations, like showing the generated link and feedback messages.
+    -   `whatsappUI.js` handles the logic for the "Share via WhatsApp" button.
+    -   `turnstile.js` manages the Cloudflare Turnstile integration for bot protection.
 
 3.  **Note Viewing (`note.html`)**:
     -   The page retrieves the note ID from the URL.
@@ -81,7 +87,7 @@ C:\Users\mat\Desktop\MAT_PrivN_pc_n\
 
 -   The project is deployed to GitHub Pages using the `.github/workflows/static.yml` workflow.
 -   The workflow triggers on pushes to the `main` branch.
--   During deployment, it generates a `src/js/config.js` file using secrets (`SUPABASE_URL`, `SUPABASE_KEY`, `ENCRYPTION_KEY`, etc.) stored in GitHub Actions. This is a good security practice to avoid committing secrets to the repository.
+-   During deployment, it generates a `src/js/config.js` file using secrets (`SUPABASE_URL`, `SUPABASE_KEY`, `ENCRYPTION_KEY`, etc.) stored in GitHub Actions. This is a good security practice to avoid committing secrets to the repository. The `config.js` file is created with the production values, and the `isProduction` flag is set to `true`.
 -   The entire project directory is then uploaded as a GitHub Pages artifact.
 
 ## 7. `.gitignore` Analysis
@@ -89,15 +95,6 @@ C:\Users\mat\Desktop\MAT_PrivN_pc_n\
 The `.gitignore` file correctly excludes:
 -   **Secrets**: `.env`, `env.json`, `public/env.js`.
 -   **Directories**: `public/`, `private/`.
--   **IDE and System Files**: `/.vscode/`, `/.gemini/`, `.DS_Store`, `node_modules/`.
+-   **IDE and System Files**: `/.vscode/`, `/.gemini/`
 
 This is a robust setup for keeping sensitive information and unnecessary files out of the repository.
-
-## 8. Recommendations and Areas for Improvement
-
--   **Content Security Policy (CSP)**: Implement a strong CSP to mitigate XSS risks. This can be done by adding a `<meta http-equiv="Content-Security-Policy" ...>` tag to the HTML files.
--   **Improved Error Handling**: Enhance user-facing error messages for scenarios like network failures, expired notes, or when a note is not found, providing clearer feedback on `note.html`.
--   **Code Refactoring**: The `domApp_service.js` and `main.js` have some overlapping responsibilities regarding UI manipulation. Refactoring could clarify their roles. For example, all direct DOM manipulations could be centralized in `DomAppService`.
--   **URL Hashing**: For an additional layer of privacy, consider moving the encryption key to the URL hash (`#`). This would prevent the key from ever being sent to the server, ensuring true end-to-end encryption where even the server operator cannot decrypt the notes.
-
-I am now familiar with your project. Please let me know what troubleshooting or improvements you would like to work on next.

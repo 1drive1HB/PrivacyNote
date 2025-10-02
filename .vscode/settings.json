@@ -1,1 +1,6 @@
-{}
+{
+  "terminal.integrated.cwd": "${workspaceFolder}",
+  "files.autoSave": "onFocusChange",
+  "editor.tabSize": 2,
+  "editor.formatOnSave": true
+}

@@ -7,17 +7,22 @@ export const createNote = async (content, expiresIn, isEncrypted = false) => {
   try {
     console.log('=== NOTEQUERY CREATE NOTE CALLED ===');
     console.log('Parameters received:', { contentLength: content.length, expiresIn, isEncrypted });
-    
+    console.log('Encryption key available:', config.encryptionKey ? 'YES' : 'NO');
+
     const supabase = await getSupabaseClient();
     if (!supabase) throw new Error('Supabase client not initialized');
 
     let processedContent = content;
-    console.log('Creating note with encryption:', isEncrypted);
-    
+
     if (isEncrypted) {
       console.log('🔄 Encrypting content...');
-      processedContent = await encryptData(content, config.encryptionKey);
-      console.log('✅ Content encrypted');
+
+      if (!config.encryptionKey) {
+        console.warn('⚠️ No encryption key found, storing as plain text');
+      } else {
+        processedContent = await encryptData(content, config.encryptionKey);
+        console.log('✅ Content encrypted');
+      }
     } else {
       console.log('🔓 No encryption - storing as plain text');
     }
@@ -59,51 +64,68 @@ export const createNote = async (content, expiresIn, isEncrypted = false) => {
 
 export const getNote = async (id) => {
   try {
-    if (!id) throw new Error('Missing note ID');
-    
+    if (!id) {
+      console.log('Missing note ID - returning null');
+      return null;
+    }
+
     const supabase = await getSupabaseClient();
     if (!supabase) throw new Error('Supabase client not initialized');
 
     console.log('Retrieving note:', id);
-    
+    console.log('Encryption key available for decryption:', config.encryptionKey ? 'YES' : 'NO');
+
     const { data: noteData, error: fetchError } = await supabase
       .from(config.tableName)
       .select('*')
-      .eq('id', id)
-      // FIX: Use maybeSingle() to prevent "Cannot coerce..." error when no row is found.
-      .maybeSingle();
+      .eq('id', id);
 
     if (fetchError) {
       console.error('Fetch error:', fetchError);
-      // Throw a specific error for better handling in noteAction.js
-      throw new Error(fetchError.message || 'Database fetch failed (406 error)');
+      throw new Error('Note not found or has been deleted');
     }
 
-    if (!noteData) {
-      // Return null if note is not found. This is now safe due to maybeSingle().
+    if (!noteData || noteData.length === 0) {
+      console.log('Note not found (empty result)');
       return null;
     }
 
+    const note = noteData[0];
+
     console.log('Note found:', {
-      id: noteData.id,
-      is_encrypted: noteData.is_encrypted,
-      read_count: noteData.read_count,
-      expired: new Date(noteData.expires_at) < new Date()
+      id: note.id,
+      is_encrypted: note.is_encrypted,
+      read_count: note.read_count,
+      expired: new Date(note.expires_at) < new Date()
     });
 
-    if (noteData.read_count > 0) {
-      throw new Error('Note has already been read and destroyed');
+    // Check if note has been read
+    if (note.read_count > 0) {
+      throw new Error('This note has already been read and destroyed');
     }
 
-    if (new Date(noteData.expires_at) < new Date()) {
-      throw new Error('Note has expired');
+    // Check if note has expired
+    if (new Date(note.expires_at) < new Date()) {
+      throw new Error('This note has expired');
     }
 
-    let content = noteData.content;
-    
-    if (noteData.is_encrypted) {
-      console.log('Decrypting encrypted content automatically...');
-      content = await decryptData(noteData.content, config.encryptionKey);
+    let content = note.content;
+
+    if (note.is_encrypted) {
+      console.log('🔓 Decrypting encrypted content...');
+
+      if (!config.encryptionKey) {
+        console.error('❌ No encryption key available for decryption');
+        throw new Error('Unable to decrypt: encryption key not available');
+      }
+
+      try {
+        content = await decryptData(note.content, config.encryptionKey);
+        console.log('✅ Content decrypted successfully');
+      } catch (decryptError) {
+        console.error('❌ Decryption failed:', decryptError);
+        throw new Error('Unable to decrypt this note. It may have been encrypted with a different key.');
+      }
     }
 
     console.log('Marking note as read...');
@@ -119,11 +141,20 @@ export const getNote = async (id) => {
     console.log('Note retrieved successfully');
     return {
       content: content,
-      markAsRead: async () => {}
+      markAsRead: async () => { }
     };
 
   } catch (error) {
     console.error('[NoteQuery] Error retrieving note:', error);
-    throw error;
+
+    // Re-throw specific errors for proper handling
+    if (error.message.includes('already been read') ||
+      error.message.includes('expired') ||
+      error.message.includes('not found') ||
+      error.message.includes('Unable to decrypt')) {
+      throw error;
+    }
+
+    throw new Error('Note not found or has been deleted');
   }
 };

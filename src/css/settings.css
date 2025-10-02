@@ -1,11 +1,11 @@
-/* settings.css - Improved Version */
+/* settings.css - Fixed Accordion Version */
 .settings-accordion {
   border: 1px solid var(--border, #e1e5e9);
   border-radius: 12px;
   margin: 1.5rem 0;
-  background: var(--card-bg, #ffffff);
+  background: var(--card-bg, #f8fafc);
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
 .accordion-header {
@@ -15,13 +15,15 @@
   align-items: center;
   justify-content: space-between;
   font-weight: 600;
-  color: var(--text, #1a1d21);
+  color: var(--text, #1e293b);
   transition: all 0.2s ease;
-  background: var(--header-bg, #f8f9fa);
+  background: var(--header-bg, #f1f5f9);
+  /* user-select: none; */
+  /* Prevent text selection */
 }
 
 .accordion-header:hover {
-  background: var(--header-hover, #e9ecef);
+  background: var(--header-hover, #e2e8f0);
 }
 
 .accordion-arrow {
@@ -29,14 +31,17 @@
   color: var(--primary, #2563eb);
 }
 
+/* FIXED: Accordion content styles */
 .accordion-content {
-  max-height: 0;
+  display: none;
+  /* Start hidden */
   overflow: hidden;
-  transition: max-height 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .accordion-content.active {
-  max-height: 500px;
+  display: block;
+  /* Show when active */
   border-top: 1px solid var(--border, #e1e5e9);
 }
 
@@ -48,14 +53,14 @@
 
 .setting-group {
   padding: 1.5rem;
-  border: 1px solid var(--border, #e1e5e9);
+  border: 1px solid var(--border, #cbd5e1);
   border-radius: 10px;
-  background: var(--bg, #ffffff);
+  background: var(--bg, #f8fafc);
   transition: all 0.2s ease;
 }
 
 .setting-group:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .setting-label {
@@ -64,7 +69,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: var(--text, #1a1d21);
+  color: var(--text, #334155);
   font-size: 1rem;
   letter-spacing: -0.01em;
 }
@@ -76,23 +81,33 @@
 }
 
 .radio-group {
-  display: flex;
+  display: grid;
   gap: 1rem;
+  width: 100%;
+}
+
+/* Desktop: 2 columns, Mobile: 1 column */
+.radio-group.desktop-2col {
+  grid-template-columns: 1fr 1fr;
+}
+
+.radio-group.desktop-3col {
+  grid-template-columns: 1fr 1fr 1fr;
 }
 
 .radio-label {
-  flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 0.75rem;
   cursor: pointer;
-  padding: 1rem 1.25rem;
-  border: 2px solid var(--border, #d1d5db);
+  padding: 1.25rem;
+  border: 2px solid var(--border, #cbd5e1);
   border-radius: 10px;
   background: var(--card-bg, #ffffff);
   transition: all 0.2s ease;
-  min-height: 56px;
+  min-height: 64px;
+  width: 100%;
 }
 
 .radio-label:hover {
@@ -115,7 +130,7 @@
 .radio-custom {
   width: 20px;
   height: 20px;
-  border: 2px solid var(--border, #9ca3af);
+  border: 2px solid var(--border, #94a3b8);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -140,10 +155,12 @@
 
 .radio-text {
   font-weight: 500;
-  color: var(--text, #374151);
+  color: var(--text, #475569);
   transition: all 0.2s ease;
   font-size: 0.95rem;
   letter-spacing: -0.01em;
+  text-align: left;
+  flex: 1;
 }
 
 .radio-label.selected .radio-text {
@@ -151,54 +168,54 @@
   font-weight: 600;
 }
 
-/* Enhanced Dark Mode */
+/* Enhanced Dark Mode - No pure white */
 @media (prefers-color-scheme: dark) {
   .settings-accordion {
-    background: var(--dark-card, #1f2937);
-    border-color: var(--dark-border, #374151);
-    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    background: var(--dark-card, #1e293b);
+    border-color: var(--dark-border, #475569);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
   }
-  
+
   .accordion-header {
-    color: var(--dark-text, #f9fafb);
-    background: var(--dark-header, #111827);
+    color: var(--dark-text, #f1f5f9);
+    background: var(--dark-header, #0f172a);
   }
-  
+
   .accordion-header:hover {
     background: var(--dark-hover, #1e293b);
   }
-  
+
   .setting-group {
-    background: var(--dark-bg, #18212f);
-    border-color: var(--dark-border, #374151);
+    background: var(--dark-bg, #1e293b);
+    border-color: var(--dark-border, #475569);
   }
 
   .setting-group:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   }
 
   .setting-label {
-    color: #ffffff !important; /* Force white for visibility */
+    color: var(--dark-text, #cbd5e1) !important;
   }
-  
+
   .radio-label {
-    background: var(--dark-card, #1f2937);
-    border-color: var(--dark-border, #4b5563);
-    color: var(--dark-text, #e5e7eb);
+    background: var(--dark-card, #334155);
+    border-color: var(--dark-border, #64748b);
+    color: var(--dark-text, #e2e8f0);
   }
-  
+
   .radio-label:hover {
     border-color: var(--primary, #3b82f6);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
   }
-  
+
   .radio-text {
-    color: #e5e7eb !important; /* Ensure visibility */
+    color: var(--dark-text, #e2e8f0) !important;
   }
 
   .radio-custom {
-    background: var(--dark-bg, #18212f);
-    border-color: var(--dark-border, #6b7280);
+    background: var(--dark-bg, #1e293b);
+    border-color: var(--dark-border, #94a3b8);
   }
 }
 
@@ -209,28 +226,83 @@
     padding: 1.25rem;
     gap: 1rem;
   }
-  
+
   .setting-group {
     padding: 1.25rem;
   }
-  
+
   .radio-group {
-    flex-direction: column;
+    grid-template-columns: 1fr !important;
     gap: 0.75rem;
   }
-  
+
   .radio-label {
-    min-height: 52px;
-    padding: 0.875rem 1rem;
+    min-height: 60px;
+    padding: 1rem;
+    justify-content: flex-start;
   }
-  
+
   .accordion-header {
     padding: 1.125rem;
   }
 }
 
+/* Desktop specific improvements */
 @media (min-width: 769px) {
   .settings-grid {
     grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
   }
+
+  .setting-group {
+    padding: 1.75rem;
+  }
+
+  .radio-label {
+    min-height: 68px;
+    padding: 1.25rem 1.5rem;
+  }
+
+  /* Ensure consistent button heights in desktop */
+  .radio-group.desktop-2col .radio-label,
+  .radio-group.desktop-3col .radio-label {
+    height: auto;
+    min-height: 68px;
+    align-items: center;
+  }
+
+  /* Better alignment for multi-line text */
+  .radio-text {
+    line-height: 1.4;
+  }
+}
+
+/* Large desktop */
+@media (min-width: 1024px) {
+  .settings-grid {
+    gap: 2rem;
+  }
+
+  .setting-group {
+    padding: 2rem;
+  }
+
+  .radio-label {
+    min-height: 72px;
+    padding: 1.5rem;
+  }
+}
+
+/* Utility class for full-width single option */
+.radio-group.full-width {
+  grid-template-columns: 1fr;
+}
+
+/* Ensure all radio buttons have same height within a group */
+.radio-group {
+  align-items: stretch;
+}
+
+.radio-label {
+  align-items: center;
 }

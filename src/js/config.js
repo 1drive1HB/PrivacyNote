@@ -24,24 +24,32 @@ export const initializeConfig = async () => {
       config.supabaseKey = window.__ENV.SUPABASE_KEY || '';
       config.tableName = window.__ENV.SUPABASE_TABLE_M || '';
       config.cfTr = window.__ENV.CF_TR || '';
-      config.cfSecretKey = window.__ENV.CF_SECRET_KEY || ''; // ADD THIS LINE
+      config.cfSecretKey = window.__ENV.CF_SECRET_KEY || '';
       config.encryptionKey = window.__ENV.ENCRYPTION_KEY || '';
-      
-   // Determine if running in production (not localhost/127.0.0.1)
+
+      // Determine if running in production
       const hostname = window.location.hostname;
-      const isLocalhost = hostname === 'localhost' || 
-                         hostname === '127.0.0.1' || 
-                         hostname === '[::]' ||
-                         window.location.href.includes('http://localhost:8080') ||
-                         window.location.href.includes('http://[::]:8080') ||
-                         window.location.href.includes('http://localhost:8080/note.html') ||
-                         window.location.href.includes('http://localhost:8080/index.html');
-      
+      const isLocalhost = hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname === '[::]' ||
+        window.location.href.includes('http://localhost:8080') ||
+        window.location.href.includes('http://[::]:8080') ||
+        window.location.href.includes('http://localhost:8080/note.html') ||
+        window.location.href.includes('http://localhost:8080/index.html');
+
       config.isProduction = !isLocalhost;
     }
 
-    console.log('Config loaded:', { 
-      ...config, 
+    // Get encryption key from URL hash if available (true E2E encryption)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const urlEncryptionKey = hashParams.get('key');
+    if (urlEncryptionKey) {
+      config.encryptionKey = urlEncryptionKey;
+      console.log('🔐 Using URL hash encryption key');
+    }
+
+    console.log('Config loaded:', {
+      ...config,
       supabaseKey: config.supabaseKey ? '***MASKED***' : 'MISSING',
       encryptionKey: config.encryptionKey ? '***MASKED***' : 'MISSING',
       supabaseUrl: config.supabaseUrl ? '***MASKED***' : 'MISSING',

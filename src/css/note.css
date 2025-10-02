@@ -54,6 +54,22 @@
   line-height: 1.4;
 }
 
+/* Note content area error state */
+.note-content-area.error {
+  background: #fed7d7;
+  color: #c53030;
+  border: 2px solid #feb2b2;
+  padding: 1.5rem;
+  border-radius: 8px;
+  min-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 500;
+  width: 100%;
+}
+
 /* Success/Info message styles */
 .info-container {
   background: #c6f6d5;
@@ -182,6 +198,12 @@
   
   .error-container h3 {
     color: #fc8181;
+  }
+
+  .note-content-area.error {
+    background: #742a2a;
+    color: #fc8181;
+    border-color: #f56565;
   }
 
   .info-container {

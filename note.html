@@ -6,14 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Secret Note</title>
 
-  <!-- In note.html head section -->
   <meta http-equiv="Content-Security-Policy" content="
-  default-src 'self';
-  script-src 'self' 'unsafe-inline' https://esm.sh;
-  style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
-  font-src 'self' https://cdnjs.cloudflare.com;
-  img-src 'self' https: data:;
-  connect-src 'self' https://*.supabase.co https://esm.sh;
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://esm.sh;
+    style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
+    font-src 'self' https://cdnjs.cloudflare.com;
+    img-src 'self' https: data:;
+    connect-src 'self' https://*.supabase.co https://esm.sh;
   ">
 
   <link rel="stylesheet" href="./src/css/base.css">

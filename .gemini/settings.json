@@ -37,6 +37,9 @@
       "format": "mcp",
       "url": "https://gitmcp.io/1drive1HB/PrivacyNote/"
     },
+    "supabase": {
+      "httpUrl": "https://mcp.supabase.com/mcp"
+    },
     "sequential-thinking": {
       "command": "npx",
       "args": [

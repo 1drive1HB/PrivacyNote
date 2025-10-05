@@ -6,13 +6,13 @@ export class TurnstileService {
 
     static async init() {
         if (this.isInitialized) return;
-        
+
         console.log('🛡️ Initializing Turnstile service...');
-        
+
         try {
             await initializeConfig();
             const isLocalhost = this.checkIsLocalhost();
-            
+
             if (isLocalhost) {
                 console.log('🔓 Localhost - showing test widget');
                 this.showTestTurnstile();
@@ -20,9 +20,9 @@ export class TurnstileService {
                 console.log('🌐 Production - loading real Turnstile');
                 await this.loadRealTurnstile();
             }
-            
+
             this.isInitialized = true;
-            
+
         } catch (error) {
             console.error('❌ Turnstile init error:', error);
             this.enableSubmitButton();
@@ -32,19 +32,19 @@ export class TurnstileService {
 
     static checkIsLocalhost() {
         const hostname = window.location.hostname;
-        return hostname === 'localhost' || 
-               hostname === '127.0.0.1' || 
-               hostname === '[::]' ||
-               window.location.href.includes('http://localhost:8080') ||
-               window.location.href.includes('http://[::]:8080') ||
-               window.location.href.includes('http://localhost:8080/note.html') ||
-               window.location.href.includes('http://localhost:8080/index.html');
+        return hostname === 'localhost' ||
+            hostname === '127.0.0.1' ||
+            hostname === '[::]' ||
+            window.location.href.includes('http://localhost:8080') ||
+            window.location.href.includes('http://[::]:8080') ||
+            window.location.href.includes('http://localhost:8080/note.html') ||
+            window.location.href.includes('http://localhost:8080/index.html');
     }
 
     static showTestTurnstile() {
         const container = document.getElementById('turnstileContainer');
         if (!container) return;
-        
+
         container.innerHTML = `
             <div class="test-cf-widget">
                 <div class="test-cf-checkbox">
@@ -60,7 +60,7 @@ export class TurnstileService {
                 </div>
             </div>
         `;
-        
+
         // Set up checkbox behavior
         const checkbox = document.getElementById('testCfCheckbox');
         if (checkbox) {
@@ -73,56 +73,66 @@ export class TurnstileService {
                 }
             });
         }
-        
+
         this.enableSubmitButton();
     }
 
     static async loadRealTurnstile() {
         const sitekey = config.cfTr || '';
-        
-        if (!sitekey || sitekey === 'undefined' || sitekey === 'null') {
-            console.log('🚫 No Turnstile sitekey - using fallback');
-            this.enableSubmitButton();
+
+        // Fix for Turnstile error 600010 - validate sitekey format
+        if (!sitekey || sitekey === 'undefined' || sitekey === 'null' || !sitekey.startsWith('0x')) {
+            console.log('Invalid Turnstile sitekey - using fallback');
+            this.showTestTurnstile();
             return;
         }
-        
+
         const script = document.createElement('script');
         script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
         script.async = true;
         script.defer = true;
-        
+
         script.onload = () => {
             this.renderRealTurnstile(sitekey);
         };
-        
+
         script.onerror = () => {
-            this.enableSubmitButton();
+            console.error('❌ Failed to load Turnstile script');
+            this.showTestTurnstile();
         };
-        
+
         document.head.appendChild(script);
     }
 
     static renderRealTurnstile(sitekey) {
         try {
             const container = document.getElementById('turnstileContainer');
-            if (!container || !window.turnstile) return;
-            
+            if (!container || !window.turnstile) {
+                console.error('❌ Turnstile container or library not found');
+                this.showTestTurnstile();
+                return;
+            }
+
             window.turnstile.render(container, {
                 sitekey: sitekey,
                 callback: (token) => {
+                    console.log('✅ Turnstile completed');
                     this.enableSubmitButton();
                     window.lastTurnstileToken = token;
                 },
-                'error-callback': () => {
-                    this.enableSubmitButton();
+                'error-callback': (error) => {
+                    console.error('❌ Turnstile error:', error);
+                    this.showTestTurnstile();
                 },
                 'expired-callback': () => {
+                    console.log('🔄 Turnstile token expired');
                     this.disableSubmitButton();
                 }
             });
-            
+
         } catch (error) {
-            this.enableSubmitButton();
+            console.error('❌ Turnstile render error:', error);
+            this.showTestTurnstile();
         }
     }
 
@@ -143,7 +153,7 @@ export class TurnstileService {
     static async validateToken(clientToken) {
         const isLocalhost = this.checkIsLocalhost();
         if (isLocalhost) return true;
-        
+
         // Production validation logic here
         return true;
     }

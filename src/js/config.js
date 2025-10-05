@@ -48,14 +48,15 @@ export const initializeConfig = async () => {
       console.log('🔐 Using URL hash encryption key');
     }
 
+    // SECURITY: Never log actual values, only check if they exist
     console.log('Config loaded:', {
-      ...config,
-      supabaseKey: config.supabaseKey ? '***MASKED***' : 'MISSING',
-      encryptionKey: config.encryptionKey ? '***MASKED***' : 'MISSING',
-      supabaseUrl: config.supabaseUrl ? '***MASKED***' : 'MISSING',
-      cfTr: config.cfTr ? '***MASKED***' : 'MISSING',
-      cfSecretKey: config.cfSecretKey ? '***MASKED***' : 'MISSING',
-      tableName: config.tableName ? '***MASKED***' : 'MISSING'
+      hasSupabaseUrl: !!config.supabaseUrl,
+      hasSupabaseKey: !!config.supabaseKey,
+      hasTableName: !!config.tableName,
+      hasCfTr: !!config.cfTr,
+      hasCfSecretKey: !!config.cfSecretKey,
+      hasEncryptionKey: !!config.encryptionKey,
+      isProduction: config.isProduction
     });
 
     return config;

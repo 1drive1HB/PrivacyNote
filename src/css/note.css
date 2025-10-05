@@ -11,6 +11,11 @@
   white-space: pre-wrap;
   word-wrap: break-word;
   width: 100%;
+  transition: all 0.3s ease;
+}
+
+.note-content-area.hidden {
+  display: none !important;
 }
 
 .note-meta {
@@ -32,10 +37,11 @@
   margin: 1rem 0;
   width: 100%;
   display: block;
+  transition: all 0.3s ease;
 }
 
 .error-container.hidden {
-  display: none;
+  display: none !important;
 }
 
 .error-container h3 {
@@ -81,10 +87,11 @@
   margin: 1rem 0;
   width: 100%;
   display: block;
+  transition: all 0.3s ease;
 }
 
 .info-container.hidden {
-  display: none;
+  display: none !important;
 }
 
 .info-container h3 {
@@ -101,6 +108,23 @@
   margin: 0;
   font-size: 1rem;
   line-height: 1.4;
+}
+
+/* ===== LOADING STATE ===== */
+.loading {
+  text-align: center;
+  color: var(--text-light);
+  font-style: italic;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 120px;
+}
+
+.loading.hidden {
+  display: none !important;
 }
 
 /* ===== BUTTON STYLES FOR NOTE PAGE ===== */
@@ -174,14 +198,6 @@
   transform: translateY(-2px);
 }
 
-/* ===== LOADING STATE ===== */
-.loading {
-  text-align: center;
-  color: var(--text-light);
-  font-style: italic;
-  padding: 2rem;
-}
-
 /* ===== DARK MODE ===== */
 @media (prefers-color-scheme: dark) {
   .note-content-area {
@@ -189,13 +205,13 @@
     border-color: var(--dark-border);
     color: var(--dark-text);
   }
-  
+
   .error-container {
     background: #742a2a;
     color: #fc8181;
     border-left-color: #f56565;
   }
-  
+
   .error-container h3 {
     color: #fc8181;
   }
@@ -211,18 +227,22 @@
     color: #9ae6b4;
     border-left-color: #48bb78;
   }
-  
+
   .info-container h3 {
     color: #9ae6b4;
   }
-  
+
   .note-btn-secondary {
     background: #4a5568;
     color: var(--dark-text);
   }
-  
+
   .note-btn-secondary:hover {
     background: #718096;
+  }
+
+  .loading {
+    color: var(--dark-text-light);
   }
 }
 
@@ -232,16 +252,16 @@
     padding: 1rem;
     min-height: 150px;
   }
-  
+
   .note-buttons {
     flex-direction: column;
   }
-  
+
   .home-link {
     width: 100%;
     justify-content: center;
   }
-  
+
   .error-container,
   .info-container {
     padding: 1rem;
@@ -252,17 +272,17 @@
   .container {
     padding: 0.75rem;
   }
-  
+
   .note-content-area {
     padding: 0.75rem;
     min-height: 120px;
   }
-  
+
   .error-container,
   .info-container {
     padding: 0.75rem;
   }
-  
+
   .error-container h3,
   .info-container h3 {
     font-size: 1.1rem;

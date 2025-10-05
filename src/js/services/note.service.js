@@ -75,7 +75,7 @@ export class NoteService {
     }
   }
 
-  // Note Viewing - FIXED VERSION
+  // Note Viewing - FIXED VERSION with proper error display
   static async viewNote() {
     try {
       console.log('🔍 Starting note viewing process...');
@@ -94,6 +94,7 @@ export class NoteService {
 
       // Hide loading spinner and show content
       this.hideLoading();
+      this.hideError(); // Hide any previous errors
 
       const noteContentEl = DomService.getElement('noteContent');
       if (noteContentEl) {
@@ -129,7 +130,7 @@ export class NoteService {
       const note = await noteQuery.getNote(noteId);
 
       if (note === null) {
-        throw new Error('This note has been read and destroyed or does not exist.');
+        throw new Error('This note has already been read and destroyed or does not exist.');
       }
 
       return note;
@@ -150,6 +151,11 @@ export class NoteService {
   }
 
   static handleViewError(error) {
+    // First hide the loading and note content
+    this.hideLoading();
+    this.hideNoteContent();
+
+    // Then show the error
     const errorContainer = DomService.getElement('errorContainer');
     const errorMessage = DomService.getElement('errorMessage');
 
@@ -162,13 +168,12 @@ export class NoteService {
   }
 
   static showError(message) {
+    this.hideLoading();
+    this.hideNoteContent();
+    this.hideInfo();
+
     const errorContainer = DomService.getElement('errorContainer');
     const errorMessage = DomService.getElement('errorMessage');
-    const noteContent = DomService.getElement('noteContent');
-    const infoContainer = DomService.getElement('infoContainer');
-
-    if (noteContent) noteContent.classList.add('hidden');
-    if (infoContainer) infoContainer.classList.add('hidden');
 
     if (errorContainer && errorMessage) {
       errorMessage.textContent = message;
@@ -184,6 +189,28 @@ export class NoteService {
       if (loadingElement) {
         loadingElement.remove();
       }
+    }
+  }
+
+  static hideNoteContent() {
+    const noteContentEl = DomService.getElement('noteContent');
+    if (noteContentEl) {
+      noteContentEl.classList.add('hidden');
+      noteContentEl.innerHTML = ''; // Clear any content
+    }
+  }
+
+  static hideError() {
+    const errorContainer = DomService.getElement('errorContainer');
+    if (errorContainer) {
+      errorContainer.classList.add('hidden');
+    }
+  }
+
+  static hideInfo() {
+    const infoContainer = DomService.getElement('infoContainer');
+    if (infoContainer) {
+      infoContainer.classList.add('hidden');
     }
   }
 

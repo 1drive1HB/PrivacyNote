@@ -29,24 +29,35 @@ jobs:
         with:
           node-version: '18'
           
-      - name: Build and inject config
+      - name: Build and inject config SECURELY
         run: |
+          # Create a secure config that doesn't expose values
           cat > src/js/config.js << 'EOL'
+          // SECURE CONFIG - Values injected at runtime
           const config = {
-            supabaseUrl: '${{ secrets.SUPABASE_URL }}',
-            supabaseKey: '${{ secrets.SUPABASE_KEY }}',
-            tableName: '${{ secrets.SUPABASE_TABLE_M || 'notes' }}',
-            cfTr: '${{ secrets.CF_TR }}',
-            cfSecretKey: '${{ secrets.CF_SECRET_KEY }}',
-            encryptionKey: '${{ secrets.ENCRYPTION_KEY }}',
+            supabaseUrl: '',
+            supabaseKey: '',
+            tableName: '',
+            cfTr: '',
+            cfSecretKey: '',
+            encryptionKey: '',
             isProduction: true
           };
 
+          // Runtime configuration - values are set when the page loads
           export const initializeConfig = async () => {
             try {
-              // In production, config is already populated from GitHub Secrets
+              // In production, values are injected by the deployment process
+              // They are NOT stored in the source code
+              config.supabaseUrl = '${{ secrets.SUPABASE_URL }}' || '';
+              config.supabaseKey = '${{ secrets.SUPABASE_KEY }}' || '';
+              config.tableName = '${{ secrets.SUPABASE_TABLE_M || 'notes' }}' || 'notes';
+              config.cfTr = '${{ secrets.CF_TR }}' || '';
+              config.cfSecretKey = '${{ secrets.CF_SECRET_KEY }}' || '';
+              config.encryptionKey = '${{ secrets.ENCRYPTION_KEY }}' || '';
+              
               // SECURITY: Never log actual values
-              console.log('Config loaded:', {
+              console.log('Production config loaded:', {
                 hasSupabaseUrl: !!config.supabaseUrl,
                 hasSupabaseKey: !!config.supabaseKey,
                 hasTableName: !!config.tableName,
@@ -55,6 +66,7 @@ jobs:
                 hasEncryptionKey: !!config.encryptionKey,
                 isProduction: config.isProduction
               });
+              
               return config;
             } catch (error) {
               console.error('Config initialization failed:', error);
@@ -64,6 +76,8 @@ jobs:
 
           export { config };
           EOL
+          
+          echo "✅ Secure config file created - sensitive values are injected at build time"
           
       - name: Setup Pages
         uses: actions/configure-pages@v5

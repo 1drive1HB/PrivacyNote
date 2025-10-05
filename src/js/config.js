@@ -45,10 +45,10 @@ export const initializeConfig = async () => {
     const urlEncryptionKey = hashParams.get('key');
     if (urlEncryptionKey) {
       config.encryptionKey = urlEncryptionKey;
-      console.log('🔐 Using URL hash encryption key');
+      //console.log('Using URL hash encryption key');
     }
 
-    // SECURITY: Never log actual values, only check if they exist
+    // SECURITY: Never log actual values
     console.log('Config loaded:', {
       hasSupabaseUrl: !!config.supabaseUrl,
       hasSupabaseKey: !!config.supabaseKey,

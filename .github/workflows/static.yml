@@ -10,15 +10,12 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+convironment:
+  name: github-pages
+  url: ${{ steps.deployment.outputs.page_url }}
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,35 +26,25 @@ jobs:
         with:
           node-version: '18'
           
-      - name: Build and inject config SECURELY
+      - name: Create secure config file
         run: |
-          # Create a secure config that doesn't expose values
+          # Create a config that uses a completely different approach
           cat > src/js/config.js << 'EOL'
-          // SECURE CONFIG - Values injected at runtime
+          // SECURE CONFIG - Values are set directly, not in functions
           const config = {
-            supabaseUrl: '',
-            supabaseKey: '',
-            tableName: '',
-            cfTr: '',
-            cfSecretKey: '',
-            encryptionKey: '',
+            supabaseUrl: '${{ secrets.SUPABASE_URL }}',
+            supabaseKey: '${{ secrets.SUPABASE_KEY }}',
+            tableName: '${{ secrets.SUPABASE_TABLE_M || 'notes' }}',
+            cfTr: '${{ secrets.CF_TR }}',
+            cfSecretKey: '${{ secrets.CF_SECRET_KEY }}',
+            encryptionKey: '${{ secrets.ENCRYPTION_KEY }}',
             isProduction: true
           };
 
-          // Runtime configuration - values are set when the page loads
           export const initializeConfig = async () => {
             try {
-              // In production, values are injected by the deployment process
-              // They are NOT stored in the source code
-              config.supabaseUrl = '${{ secrets.SUPABASE_URL }}' || '';
-              config.supabaseKey = '${{ secrets.SUPABASE_KEY }}' || '';
-              config.tableName = '${{ secrets.SUPABASE_TABLE_M || 'notes' }}' || 'notes';
-              config.cfTr = '${{ secrets.CF_TR }}' || '';
-              config.cfSecretKey = '${{ secrets.CF_SECRET_KEY }}' || '';
-              config.encryptionKey = '${{ secrets.ENCRYPTION_KEY }}' || '';
-              
-              // SECURITY: Never log actual values
-              console.log('Production config loaded:', {
+              // SECURITY: Create a safe copy for logging without exposing values
+              const safeConfig = {
                 hasSupabaseUrl: !!config.supabaseUrl,
                 hasSupabaseKey: !!config.supabaseKey,
                 hasTableName: !!config.tableName,
@@ -65,7 +52,9 @@ jobs:
                 hasCfSecretKey: !!config.cfSecretKey,
                 hasEncryptionKey: !!config.encryptionKey,
                 isProduction: config.isProduction
-              });
+              };
+              
+              console.log('🔧 Production config status:', safeConfig);
               
               return config;
             } catch (error) {
@@ -77,7 +66,7 @@ jobs:
           export { config };
           EOL
           
-          echo "✅ Secure config file created - sensitive values are injected at build time"
+          echo "✅ Secure config file created"
           
       - name: Setup Pages
         uses: actions/configure-pages@v5

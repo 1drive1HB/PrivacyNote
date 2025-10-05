@@ -10,12 +10,15 @@ permissions:
   pages: write
   id-token: write
 
-convironment:
-  name: github-pages
-  url: ${{ steps.deployment.outputs.page_url }}
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -28,9 +31,9 @@ jobs:
           
       - name: Create secure config file
         run: |
-          # Create a config that uses a completely different approach
+          # Create a config that uses environment variables directly
           cat > src/js/config.js << 'EOL'
-          // SECURE CONFIG - Values are set directly, not in functions
+          // SECURE CONFIG - Values are set directly at build time
           const config = {
             supabaseUrl: '${{ secrets.SUPABASE_URL }}',
             supabaseKey: '${{ secrets.SUPABASE_KEY }}',

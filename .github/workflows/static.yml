@@ -29,47 +29,70 @@ jobs:
         with:
           node-version: '18'
           
-      - name: Create secure config file
+      - name: Create XOR encrypted config
         run: |
-          # Create a config that uses environment variables directly
-          cat > src/js/config.js << 'EOL'
-          // SECURE CONFIG - Values are set directly at build time
-          const config = {
-            supabaseUrl: '${{ secrets.SUPABASE_URL }}',
-            supabaseKey: '${{ secrets.SUPABASE_KEY }}',
-            tableName: '${{ secrets.SUPABASE_TABLE_M || 'notes' }}',
-            cfTr: '${{ secrets.CF_TR }}',
-            cfSecretKey: '${{ secrets.CF_SECRET_KEY }}',
-            encryptionKey: '${{ secrets.ENCRYPTION_KEY }}',
-            isProduction: true
+          node << 'EOF'
+          // Simple XOR encryption
+          function xorEncrypt(text, key) {
+            let result = '';
+            for (let i = 0; i < text.length; i++) {
+              result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+            }
+            return btoa(result); // Base64 encode the result
+          }
+          
+          // Generate a unique key for this build
+          const key = "pn_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+          
+          const secrets = {
+            supabaseUrl: "${{ secrets.SUPABASE_URL }}",
+            supabaseKey: "${{ secrets.SUPABASE_KEY }}",
+            cfTr: "${{ secrets.CF_TR }}", 
+            encryptionKey: "${{ secrets.ENCRYPTION_KEY }}"
           };
-
-          export const initializeConfig = async () => {
+          
+          const encrypted = {};
+          for (const [secretKey, value] of Object.entries(secrets)) {
+            encrypted[secretKey] = value ? xorEncrypt(value, key) : '';
+          }
+          
+          const configContent = `// XOR ENCRYPTED CONFIG
+          const XOR_KEY = "${key}";
+          
+          const xorDecrypt = (encoded, key) => {
             try {
-              // SECURITY: Create a safe copy for logging without exposing values
-              const safeConfig = {
-                hasSupabaseUrl: !!config.supabaseUrl,
-                hasSupabaseKey: !!config.supabaseKey,
-                hasTableName: !!config.tableName,
-                hasCfTr: !!config.cfTr,
-                hasCfSecretKey: !!config.cfSecretKey,
-                hasEncryptionKey: !!config.encryptionKey,
-                isProduction: config.isProduction
-              };
-              
-              console.log('🔧 Production config status:', safeConfig);
-              
-              return config;
-            } catch (error) {
-              console.error('Config initialization failed:', error);
-              return config;
+              const text = atob(encoded);
+              let result = '';
+              for (let i = 0; i < text.length; i++) {
+                result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+              }
+              return result;
+            } catch {
+              return '';
             }
           };
-
-          export { config };
-          EOL
           
-          echo "✅ Secure config file created"
+          const ENCRYPTED_VALUES = ${JSON.stringify(encrypted, null, 2)};
+          
+          const config = {
+            supabaseUrl: xorDecrypt(ENCRYPTED_VALUES.supabaseUrl, XOR_KEY),
+            supabaseKey: xorDecrypt(ENCRYPTED_VALUES.supabaseKey, XOR_KEY),
+            tableName: 'notes',
+            cfTr: xorDecrypt(ENCRYPTED_VALUES.cfTr, XOR_KEY),
+            encryptionKey: xorDecrypt(ENCRYPTED_VALUES.encryptionKey, XOR_KEY),
+            isProduction: true
+          };
+          
+          export const initializeConfig = async () => {
+            console.log('🔧 Production config loaded (XOR encrypted)');
+            return config;
+          };
+          
+          export { config };`;
+          
+          require('fs').writeFileSync('src/js/config.js', configContent);
+          console.log('✅ XOR encrypted config file created');
+          EOF
           
       - name: Setup Pages
         uses: actions/configure-pages@v5

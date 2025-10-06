@@ -17,23 +17,11 @@ export class NoteService {
   // Note Creation - FIXED VERSION
   static async createNote(content, settings) {
     try {
-      console.log('📝 Creating note with settings:', settings);
-      console.log('🔐 Encryption setting:', {
-        raw: settings.encryption,
-        type: typeof settings.encryption
-      });
-
       const env = this.getEnvironment();
 
       // FIX: Remove the string comparison - settings.encryption is already boolean
       const isEncrypted = Boolean(settings.encryption);
       const expiresIn = settings.expiration === '48h' ? 172800 : 86400; // 48h or 24h in seconds
-
-      console.log('🎯 Final parameters:', {
-        contentLength: content.length,
-        isEncrypted,
-        expiresIn
-      });
 
       const { createNote } = await import('../actions/noteQuery.js');
       const newNote = await createNote(content, expiresIn, isEncrypted);
@@ -53,12 +41,6 @@ export class NoteService {
 
   static generateNoteUrl(noteId, isEncrypted, env) {
     let url = `${window.location.origin}${env.basePath}/note.html?id=${noteId}`;
-
-    // Add encryption key to URL hash for true E2E encryption
-    // if (isEncrypted && config.encryptionKey) {
-    //   url += `#key=${encodeURIComponent(config.encryptionKey)}`;
-    // }
-
     return url;
   }
 
@@ -75,26 +57,32 @@ export class NoteService {
     }
   }
 
-  // Note Viewing - FIXED VERSION with proper error display
+  // Note Viewing - FIXED VERSION with proper error handling
   static async viewNote() {
     try {
-      console.log('🔍 Starting note viewing process...');
-
       const noteId = this.getNoteIdFromUrl();
 
       if (!noteId) {
+        console.log('❌ This note does not exist or has been deleted.');
         this.showError('This note does not exist or has been deleted.');
         return false;
       }
 
-      console.log('Loading note with ID:', noteId);
-
       await this.setupEnvironment();
-      const { content, markAsRead } = await this.getNoteContent(noteId);
+      const noteResult = await this.getNoteContent(noteId);
+
+      // If noteResult is null, it means the note doesn't exist or was already read
+      if (noteResult === null) {
+        console.log('❌ This note does not exist or has been deleted.');
+        this.showError('This note does not exist or has been deleted.');
+        return false;
+      }
+
+      const { content, markAsRead } = noteResult;
 
       // Hide loading spinner and show content
       this.hideLoading();
-      this.hideError(); // Hide any previous errors
+      this.hideError();
 
       const noteContentEl = DomService.getElement('noteContent');
       if (noteContentEl) {
@@ -102,16 +90,15 @@ export class NoteService {
         noteContentEl.classList.remove('hidden');
       }
 
-      await markAsRead();
+      if (markAsRead) {
+        await markAsRead();
+      }
 
       // Clean URL after reading
       window.history.replaceState({}, document.title, window.location.pathname);
-
-      console.log('✅ Note loaded successfully');
       return true;
 
     } catch (error) {
-      console.error('❌ Note viewing failed:', error);
       this.hideLoading();
       this.handleViewError(error);
       return false;
@@ -125,46 +112,41 @@ export class NoteService {
 
   static async getNoteContent(noteId) {
     try {
-      console.log('Fetching note content...');
       const noteQuery = await import('../actions/noteQuery.js');
       const note = await noteQuery.getNote(noteId);
 
+      // If note is null, return null instead of throwing error
       if (note === null) {
-        throw new Error('This note has already been read and destroyed or does not exist.');
+        return null;
       }
 
       return note;
     } catch (error) {
-      console.error('Failed to get note:', error);
-
-      // Provide user-friendly error messages
-      if (error.message.includes('already been read') || error.message.includes('destroyed')) {
-        throw new Error('This note has already been read and destroyed.');
-      } else if (error.message.includes('expired')) {
-        throw new Error('This note has expired.');
-      } else if (error.message.includes('not found')) {
-        throw new Error('This note does not exist or has been deleted.');
-      } else {
-        throw new Error('Failed to load note. Please try again.');
+      // For specific errors, return null instead of throwing
+      if (error.message.includes('already been read') ||
+        error.message.includes('destroyed') ||
+        error.message.includes('expired') ||
+        error.message.includes('not found')) {
+        return null;
       }
+
+      // Re-throw only unexpected errors
+      throw error;
     }
   }
 
   static handleViewError(error) {
-    // First hide the loading and note content
     this.hideLoading();
     this.hideNoteContent();
 
-    // Then show the error
     const errorContainer = DomService.getElement('errorContainer');
     const errorMessage = DomService.getElement('errorMessage');
 
     if (errorContainer && errorMessage) {
-      errorMessage.textContent = error.message;
+      // Use a generic user-friendly message
+      errorMessage.textContent = 'This note does not exist or has been deleted.';
       errorContainer.classList.remove('hidden');
     }
-
-    console.error('Note Viewing Error:', error);
   }
 
   static showError(message) {
@@ -184,7 +166,6 @@ export class NoteService {
   static hideLoading() {
     const noteContentEl = DomService.getElement('noteContent');
     if (noteContentEl) {
-      // Remove the loading spinner but keep the element visible for content
       const loadingElement = noteContentEl.querySelector('.loading');
       if (loadingElement) {
         loadingElement.remove();
@@ -196,7 +177,7 @@ export class NoteService {
     const noteContentEl = DomService.getElement('noteContent');
     if (noteContentEl) {
       noteContentEl.classList.add('hidden');
-      noteContentEl.innerHTML = ''; // Clear any content
+      noteContentEl.innerHTML = '';
     }
   }
 

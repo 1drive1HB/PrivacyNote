@@ -47,6 +47,7 @@ jobs:
           const secrets = {
             supabaseUrl: "${{ secrets.SUPABASE_URL }}",
             supabaseKey: "${{ secrets.SUPABASE_KEY }}",
+            tableName: "${{ secrets.SUPABASE_TABLE_M || 'notes' }}",
             cfTr: "${{ secrets.CF_TR }}", 
             encryptionKey: "${{ secrets.ENCRYPTION_KEY }}"
           };
@@ -77,7 +78,7 @@ jobs:
           const config = {
             supabaseUrl: xorDecrypt(ENCRYPTED_VALUES.supabaseUrl, XOR_KEY),
             supabaseKey: xorDecrypt(ENCRYPTED_VALUES.supabaseKey, XOR_KEY),
-            tableName: 'notes',
+            tableName: xorDecrypt(ENCRYPTED_VALUES.tableName, XOR_KEY),
             cfTr: xorDecrypt(ENCRYPTED_VALUES.cfTr, XOR_KEY),
             encryptionKey: xorDecrypt(ENCRYPTED_VALUES.encryptionKey, XOR_KEY),
             isProduction: true
@@ -91,7 +92,7 @@ jobs:
           export { config };`;
           
           require('fs').writeFileSync('src/js/config.js', configContent);
-          console.log('✅ XOR encrypted config file created');
+          console.log('✅ XOR encrypted config file created - ALL values encrypted including table name');
           EOF
           
       - name: Setup Pages

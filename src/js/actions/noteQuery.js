@@ -5,24 +5,14 @@ import { encryptData, decryptData } from './cryptoActions.js';
 
 export const createNote = async (content, expiresIn, isEncrypted = false) => {
   try {
-    console.log('=== NOTEQUERY CREATE NOTE CALLED ===');
-    console.log('Parameters received:', {
-      contentLength: content.length,
-      expiresIn,
-      isEncrypted,
-      sampleContent: content.substring(0, 20) + '...'
-    });
-
     const supabase = await getSupabaseClient();
     if (!supabase) throw new Error('Supabase client not initialized');
 
     let processedContent = content;
 
     if (isEncrypted) {
-      console.log('🔄 Encrypting content...');
       processedContent = await encryptData(content, true);
       console.log('✅ Content encrypted:', processedContent !== content ? 'YES' : 'NO');
-      console.log('🔐 Encrypted sample:', processedContent.substring(0, 50) + '...');
     } else {
       console.log('🔓 Encryption disabled - storing as PLAIN TEXT');
       processedContent = await encryptData(content, false); // This will return plain text
@@ -32,12 +22,12 @@ export const createNote = async (content, expiresIn, isEncrypted = false) => {
     const expiresIn24h = expiresIn === 24 * 60 * 60;
     const expiresIn48h = expiresIn === 48 * 60 * 60;
 
-    console.log('Inserting into database with settings:', {
-      is_encrypted: isEncrypted,
-      expires_in_24h: expiresIn24h,
-      expires_in_48h: expiresIn48h,
-      content_type: isEncrypted ? 'encrypted' : 'plain_text'
-    });
+    // console.log('Inserting into database with settings:', {
+    //   is_encrypted: isEncrypted,
+    //   expires_in_24h: expiresIn24h,
+    //   expires_in_48h: expiresIn48h,
+    //   content_type: isEncrypted ? 'encrypted' : 'plain_text'
+    // });
 
     const { data, error } = await supabase
       .from(config.tableName)
@@ -94,14 +84,6 @@ export const getNote = async (id) => {
 
     const note = noteData[0];
 
-    console.log('Note found:', {
-      id: note.id,
-      is_encrypted: note.is_encrypted,
-      read_count: note.read_count,
-      content_sample: note.content.substring(0, 50) + '...',
-      expired: new Date(note.expires_at) < new Date()
-    });
-
     // Check if note has been read
     if (note.read_count > 0) {
       throw new Error('This note has already been read and destroyed');
@@ -118,7 +100,6 @@ export const getNote = async (id) => {
       console.log('🔓 Decrypting encrypted content...');
       try {
         content = await decryptData(note.content, true);
-        console.log('✅ Content decrypted successfully');
         console.log('📝 Decrypted sample:', content.substring(0, 20) + '...');
       } catch (decryptError) {
         console.error('❌ Decryption failed:', decryptError);

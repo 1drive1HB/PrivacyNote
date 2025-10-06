@@ -48,17 +48,6 @@ export const initializeConfig = async () => {
       //console.log('Using URL hash encryption key');
     }
 
-    // SECURITY: Never log actual values
-    console.log('Config loaded:', {
-      hasSupabaseUrl: !!config.supabaseUrl,
-      hasSupabaseKey: !!config.supabaseKey,
-      hasTableName: !!config.tableName,
-      hasCfTr: !!config.cfTr,
-      hasCfSecretKey: !!config.cfSecretKey,
-      hasEncryptionKey: !!config.encryptionKey,
-      isProduction: config.isProduction
-    });
-
     return config;
   } catch (error) {
     console.error('Config initialization failed:', error);

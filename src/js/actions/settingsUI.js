@@ -11,11 +11,9 @@ export class SettingsUI {
     }
 
     static initialize() {
-        console.log('🔄 Initializing SettingsUI...');
         this.initializeAccordion();
         this.initializeRadioButtons();
         this.initializeCharacterCounter();
-        console.log('✅ SettingsUI initialized');
     }
 
     static initializeAccordion() {
@@ -50,13 +48,10 @@ export class SettingsUI {
                 console.log('Accordion state:', content.classList.contains('active'));
             });
         });
-
-        // Start with accordion CLOSED
-        console.log('Accordion starts closed');
     }
 
     static initializeRadioButtons() {
-        console.log('Setting up radio buttons...');
+        //console.log('Setting up radio buttons...');
 
         // Set default settings first
         this.setDefaultSettings();

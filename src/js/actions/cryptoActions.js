@@ -6,11 +6,8 @@ const salt = encoder.encode('secure-note-salt')
 export const encryptData = async (text, useEncryption = false) => {
   try {
     if (!useEncryption) {
-      console.log('🔓 Encryption disabled - storing as PLAIN TEXT');
       return text; // Return plain text when encryption is disabled
     }
-
-    console.log('🔐 Encrypting with config ENCRYPTION_KEY');
 
     // Import your existing config
     const { config } = await import('../config.js');
@@ -56,7 +53,6 @@ export const encryptData = async (text, useEncryption = false) => {
       data: Array.from(new Uint8Array(encrypted))
     });
 
-    console.log('✅ Encryption successful');
     return result;
 
   } catch (error) {
@@ -71,8 +67,6 @@ export const decryptData = async (encrypted, useEncryption = false) => {
       console.log('🔓 No encryption - returning plain text');
       return encrypted; // Return as-is when no encryption
     }
-
-    console.log('🔐 Decrypting with config ENCRYPTION_KEY');
 
     // Import your existing config
     const { config } = await import('../config.js');

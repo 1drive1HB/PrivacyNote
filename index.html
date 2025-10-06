@@ -8,14 +8,14 @@
 
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://challenges.cloudflare.com https://esm.sh;
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://challenges.cloudflare.com https://esm.sh https://1drive1hb.github.io;
     style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
     font-src 'self' https://cdnjs.cloudflare.com;
     img-src 'self' https: data:;
-    connect-src 'self' https://*.supabase.co https://esm.sh;
+    connect-src 'self' https://*.supabase.co https://esm.sh https://challenges.cloudflare.com https://*.github.io;
     frame-src https://challenges.cloudflare.com;
+    child-src https://challenges.cloudflare.com;
   ">
-
   <!-- CSS Files -->
   <link rel="stylesheet" href="./src/css/base.css">
   <link rel="stylesheet" href="./src/css/components.css">
@@ -40,7 +40,7 @@
     <main>
       <section id="createNoteSection">
         <div class="form-group">
-          <p class="description">Your note will self-destruct after being read</p>
+          <!-- <p class="description">Your note will self-destruct after being read</p> -->
           <textarea id="noteText" placeholder="Type your message here..." maxlength="8000"></textarea>
           <div class="char-counter">
             <span id="charCount">0</span>/8000 characters (Max)

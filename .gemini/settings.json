@@ -38,7 +38,14 @@
       "url": "https://gitmcp.io/1drive1HB/PrivacyNote/"
     },
     "supabase": {
-      "httpUrl": "https://mcp.supabase.com/mcp"
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://postgres:445hu**3has9ywq@db.fjkboubaevzjgkplhhxh.supabase.co:5432/postgres"
+      ]
     },
     "sequential-thinking": {
       "command": "npx",
@@ -55,6 +62,11 @@
     "useCache": true
   },
   "advanced": {
-    "logLevel": "info"
+    "logLevel": "info",
+    "loopDetection": {
+      "enabled": true,
+      "similarityThreshold": 0.9,
+      "maxLoopCount": 5
+    }
   }
 }

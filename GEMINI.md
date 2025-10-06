@@ -51,15 +51,16 @@ C:\Users\mat\Desktop\MAT_PrivN_pc_n\
         ├───load-Env.js           # Loads environment variables for local dev
         ├───actions\
         │   ├───cryptoActions.js  # Encryption/decryption logic
-        │   ├───noteAction.js     # Handles logic for the note viewing page
         │   ├───noteQuery.js      # Handles communication with Supabase
         │   └───settingsUI.js     # Manages the settings UI component
         └───services\
-            ├───domApp_service.js   # DOM manipulation and UI services
-            ├───noteApp_service.js  # Handles the application logic for notes
+            ├───dom.service.js   # DOM manipulation and UI services
+            ├───note.service.js  # Handles the application logic for notes
             ├───supabase.js         # Initializes and exports the Supabase client
             ├───turnstile.js        # Manages Cloudflare Turnstile integration
             └───whatsappUI.js       # Manages the WhatsApp sharing UI
+
+.trash\sql\ --> three supabse files for analysis of DB
 ```
 
 ## 5. Application Workflow
@@ -71,15 +72,15 @@ C:\Users\mat\Desktop\MAT_PrivN_pc_n\
 2.  **Note Creation (`index.html`)**:
     -   `main.js` is the main entry point. It initializes the UI, loads the settings component using `SettingsUI.js`, and sets up event listeners.
     -   The user enters a note, chooses encryption and expiration settings, and clicks "Create Secure Note".
-    -   `noteApp_service.js` reads the settings and calls `createNote` from `noteQuery.js`.
+    -   `note.service.js` reads the settings and calls `createNote` from `noteQuery.js`.
     -   `noteQuery.js` **encrypts the content** (if enabled) using `cryptoActions.js` and sends it to the Supabase backend.
-    -   A unique URL for the note is generated and displayed to the user. `domApp_service.js` is used for DOM manipulations, like showing the generated link and feedback messages.
+    -   A unique URL for the note is generated and displayed to the user. `dom.service.js` is used for DOM manipulations, like showing the generated link and feedback messages.
     -   `whatsappUI.js` handles the logic for the "Share via WhatsApp" button.
     -   `turnstile.js` manages the Cloudflare Turnstile integration for bot protection.
 
 3.  **Note Viewing (`note.html`)**:
     -   The page retrieves the note ID from the URL.
-    -   `noteAction.js` calls `getNote` from `noteQuery.js` to fetch the note from Supabase.
+    -   `note.service.js` calls `getNote` from `noteQuery.js` to fetch the note from Supabase.
     -   If the note was encrypted, `noteQuery.js` **automatically decrypts the content** using `cryptoActions.js`.
     -   The note content is displayed, and the note is marked as read in the database, effectively destroying it.
 
@@ -87,7 +88,7 @@ C:\Users\mat\Desktop\MAT_PrivN_pc_n\
 
 -   The project is deployed to GitHub Pages using the `.github/workflows/static.yml` workflow.
 -   The workflow triggers on pushes to the `main` branch.
--   During deployment, it generates a `src/js/config.js` file using secrets (`SUPABASE_URL`, `SUPABASE_KEY`, `ENCRYPTION_KEY`, etc.) stored in GitHub Actions. This is a good security practice to avoid committing secrets to the repository. The `config.js` file is created with the production values, and the `isProduction` flag is set to `true`.
+-   During deployment, it generates a `src/js/config.js` file using secrets (`SUPABASE_URL`, `SUPABASE_KEY`, `ENCRYPTION_KEY`, etc.) stored in GitHub Actions. The secrets are XOR encrypted before being written to the config file. This is a good security practice to avoid committing secrets to the repository. The `config.js` file is created with the production values, and the `isProduction` flag is set to `true`.
 -   The entire project directory is then uploaded as a GitHub Pages artifact.
 
 ## 7. `.gitignore` Analysis

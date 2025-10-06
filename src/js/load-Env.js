@@ -35,7 +35,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       ENCRYPTION_KEY: env.ENCRYPTION_KEY
     };
     console.log('✅ Local environment loaded successfully');
-    console.log('🔐 Encryption key loaded:', window.__ENV.ENCRYPTION_KEY ? 'YES' : 'NO');
 
   } catch (error) {
     console.error('❌ Error loading environment:', error.message);

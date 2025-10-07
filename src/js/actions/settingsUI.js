@@ -115,9 +115,9 @@ export class SettingsUI {
                 charCount.textContent = length.toLocaleString();
 
                 // Change color when approaching limit
-                if (length > 8000) {
+                if (length > 2250) {
                     charCount.style.color = '#dc2626';
-                } else if (length > 3500) {
+                } else if (length > 1125) {
                     charCount.style.color = '#ea580c';
                 } else {
                     charCount.style.color = '';

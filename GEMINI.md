@@ -1,6 +1,8 @@
 # Gemini Project Analysis: PrivacyNote
 
-This document outlines the analysis of the PrivacyNote project, providing a reference for future development and troubleshooting.
+This document outlines the analysis of the PrivacyNote project,
+providing a reference for infmation about project and how it all connected.
+
 
 ## 1. Project Overview
 
@@ -60,7 +62,7 @@ C:\Users\mat\Desktop\MAT_PrivN_pc_n\
             ├───turnstile.js        # Manages Cloudflare Turnstile integration
             └───whatsappUI.js       # Manages the WhatsApp sharing UI
 
-.trash\sql\ --> three supabse files for analysis of DB
+├─── private\sql\  --> three supabse files for analysis of DB
 ```
 
 ## 5. Application Workflow
@@ -84,6 +86,10 @@ C:\Users\mat\Desktop\MAT_PrivN_pc_n\
     -   If the note was encrypted, `noteQuery.js` **automatically decrypts the content** using `cryptoActions.js`.
     -   The note content is displayed, and the note is marked as read in the database, effectively destroying it.
 
+## important: .github\workflows\static.yml:
+
+
+
 ## 6. Build and Deployment
 
 -   The project is deployed to GitHub Pages using the `.github/workflows/static.yml` workflow.
@@ -99,3 +105,4 @@ The `.gitignore` file correctly excludes:
 -   **IDE and System Files**: `/.vscode/`, `/.gemini/`
 
 This is a robust setup for keeping sensitive information and unnecessary files out of the repository.
+

@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const env = await response.json();
+    // SECURITY: Store temporarily, will be deleted by config.js after initialization
     window.__ENV = {
       SUPABASE_URL: env.SUPABASE_URL,
       SUPABASE_KEY: env.SUPABASE_KEY,
@@ -34,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       CF_SECRET_KEY: env.CF_SECRET_KEY,
       ENCRYPTION_KEY: env.ENCRYPTION_KEY
     };
-    console.log('✅ Local environment loaded successfully');
+    console.log('✅ Local environment loaded successfully (will be cleared after init)');
 
   } catch (error) {
     console.error('❌ Error loading environment:', error.message);

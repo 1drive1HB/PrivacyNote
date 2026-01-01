@@ -1,4 +1,6 @@
 // src/js/services/whatsappUI.js
+import { DomService } from './dom.service.js';
+
 export class WhatsAppUI {
     static init() {
         this.setupWhatsAppHandler();
@@ -19,7 +21,8 @@ export class WhatsAppUI {
         }
 
         if (!url) {
-            this.showFeedback('No link available to share', 'error');
+            const feedbackElement = document.getElementById('copyFeedback');
+            DomService.showFeedback(feedbackElement, 'No link available to share', 'error');
             return;
         }
 
@@ -40,36 +43,7 @@ export class WhatsAppUI {
             window.location.href = `https://api.whatsapp.com/send?text=${encodedMessage}`;
         }
 
-        this.showFeedback('Opening WhatsApp...', 'success');
-    }
-
-    static showFeedback(message, type) {
-        const existingFeedback = document.querySelector('.whatsapp-feedback');
-        if (existingFeedback) {
-            existingFeedback.remove();
-        }
-
-        const feedback = document.createElement('div');
-        feedback.className = `whatsapp-feedback ${type}`;
-        feedback.textContent = message;
-        feedback.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 1rem 2rem;
-            border-radius: 8px;
-            color: white;
-            font-weight: 600;
-            z-index: 10000;
-            background: ${type === 'success' ? '#25D366' : '#f56565'};
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        `;
-
-        document.body.appendChild(feedback);
-        
-        setTimeout(() => {
-            feedback.remove();
-        }, 2000);
+        const feedbackElement = document.getElementById('copyFeedback');
+        DomService.showFeedback(feedbackElement, 'Opening WhatsApp...', 'success');
     }
 }

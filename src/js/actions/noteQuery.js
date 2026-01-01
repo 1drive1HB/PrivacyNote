@@ -2,9 +2,16 @@
 import { getSupabaseClient } from '../services/supabase.js';
 import { config } from '../config.js';
 import { encryptData, decryptData } from './cryptoActions.js';
+import { RateLimiter } from '../utils/rateLimiter.js';
 
 export const createNote = async (content, expiresIn, isEncrypted = false) => {
   try {
+    // SECURITY: Rate limiting - 5 notes per minute
+    const rateCheck = RateLimiter.checkLimit('createNote', 5, 60000);
+    if (!rateCheck.allowed) {
+      throw new Error(rateCheck.message);
+    }
+    
     const supabase = await getSupabaseClient();
     if (!supabase) throw new Error('Supabase client not initialized');
 
@@ -12,22 +19,12 @@ export const createNote = async (content, expiresIn, isEncrypted = false) => {
 
     if (isEncrypted) {
       processedContent = await encryptData(content, true);
-      console.log('✅ Content encrypted:', processedContent !== content ? 'YES' : 'NO');
     } else {
-      console.log('🔓 Encryption disabled - storing as PLAIN TEXT');
       processedContent = await encryptData(content, false); // This will return plain text
-      console.log('📝 Plain text sample:', processedContent.substring(0, 20) + '...');
     }
 
     const expiresIn24h = expiresIn === 24 * 60 * 60;
     const expiresIn48h = expiresIn === 48 * 60 * 60;
-
-    // console.log('Inserting into database with settings:', {
-    //   is_encrypted: isEncrypted,
-    //   expires_in_24h: expiresIn24h,
-    //   expires_in_48h: expiresIn48h,
-    //   content_type: isEncrypted ? 'encrypted' : 'plain_text'
-    // });
 
     const { data, error } = await supabase
       .from(config.tableName)
@@ -46,7 +43,6 @@ export const createNote = async (content, expiresIn, isEncrypted = false) => {
       throw new Error(error.message || 'Failed to create note');
     }
 
-    console.log('✅ Note created successfully:', data.id);
     return data;
 
   } catch (error) {
@@ -58,14 +54,11 @@ export const createNote = async (content, expiresIn, isEncrypted = false) => {
 export const getNote = async (id) => {
   try {
     if (!id) {
-      console.log('Missing note ID - returning null');
       return null;
     }
 
     const supabase = await getSupabaseClient();
     if (!supabase) throw new Error('Supabase client not initialized');
-
-    console.log('Retrieving note:', id);
 
     const { data: noteData, error: fetchError } = await supabase
       .from(config.tableName)
@@ -78,7 +71,6 @@ export const getNote = async (id) => {
     }
 
     if (!noteData || noteData.length === 0) {
-      console.log('Note not found (empty result)');
       return null;
     }
 
@@ -97,21 +89,16 @@ export const getNote = async (id) => {
     let content = note.content;
 
     if (note.is_encrypted) {
-      console.log('🔓 Decrypting encrypted content...');
       try {
         content = await decryptData(note.content, true);
-        console.log('📝 Decrypted sample:', content.substring(0, 20) + '...');
       } catch (decryptError) {
-        console.error('❌ Decryption failed:', decryptError);
+        console.error('Decryption failed:', decryptError);
         throw new Error('Unable to decrypt this note. It may have been encrypted with a different key.');
       }
     } else {
-      console.log('🔓 No encryption - using plain text');
       content = await decryptData(note.content, false);
-      console.log('📝 Plain text sample:', content.substring(0, 20) + '...');
     }
 
-    console.log('Marking note as read...');
     const { error: updateError } = await supabase
       .from(config.tableName)
       .update({ read_count: 1 })
@@ -121,7 +108,6 @@ export const getNote = async (id) => {
       console.error('Error marking as read:', updateError);
     }
 
-    console.log('Note retrieved successfully');
     return {
       content: content,
       markAsRead: async () => { }

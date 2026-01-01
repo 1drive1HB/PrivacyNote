@@ -14,10 +14,6 @@
   transition: all 0.3s ease;
 }
 
-.note-content-area.hidden {
-  display: none !important;
-}
-
 .note-meta {
   text-align: center;
   color: var(--text-light);
@@ -38,10 +34,6 @@
   width: 100%;
   display: block;
   transition: all 0.3s ease;
-}
-
-.error-container.hidden {
-  display: none !important;
 }
 
 .error-container h3 {
@@ -90,10 +82,6 @@
   transition: all 0.3s ease;
 }
 
-.info-container.hidden {
-  display: none !important;
-}
-
 .info-container h3 {
   color: #276749;
   margin-bottom: 0.5rem;
@@ -121,10 +109,6 @@
   justify-content: center;
   gap: 0.5rem;
   min-height: 120px;
-}
-
-.loading.hidden {
-  display: none !important;
 }
 
 /* ===== BUTTON STYLES FOR NOTE PAGE ===== */

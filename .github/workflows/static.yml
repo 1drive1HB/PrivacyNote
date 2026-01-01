@@ -57,8 +57,8 @@ jobs:
             encrypted[secretKey] = value ? xorEncrypt(value, key) : '';
           }
           
-          const configContent = `// XOR ENCRYPTED CONFIG
-          const XOR_KEY = "${key}";
+          const configContent = \`// XOR ENCRYPTED CONFIG - SECURITY HARDENED
+          const XOR_KEY = "\${key}";
           
           const xorDecrypt = (encoded, key) => {
             try {
@@ -73,23 +73,53 @@ jobs:
             }
           };
           
-          const ENCRYPTED_VALUES = ${JSON.stringify(encrypted, null, 2)};
+          const ENCRYPTED_VALUES = \${JSON.stringify(encrypted, null, 2)};
           
-          const config = {
-            supabaseUrl: xorDecrypt(ENCRYPTED_VALUES.supabaseUrl, XOR_KEY),
-            supabaseKey: xorDecrypt(ENCRYPTED_VALUES.supabaseKey, XOR_KEY),
-            tableName: xorDecrypt(ENCRYPTED_VALUES.tableName, XOR_KEY),
-            cfTr: xorDecrypt(ENCRYPTED_VALUES.cfTr, XOR_KEY),
-            encryptionKey: xorDecrypt(ENCRYPTED_VALUES.encryptionKey, XOR_KEY),
-            isProduction: true
+          // SECURITY: Use closure pattern to hide sensitive config
+          const createSecureConfig = () => {
+            // Private variables - decrypt once and store
+            let _supabaseUrl = xorDecrypt(ENCRYPTED_VALUES.supabaseUrl, XOR_KEY);
+            let _supabaseKey = xorDecrypt(ENCRYPTED_VALUES.supabaseKey, XOR_KEY);
+            let _tableName = xorDecrypt(ENCRYPTED_VALUES.tableName, XOR_KEY);
+            let _cfTr = xorDecrypt(ENCRYPTED_VALUES.cfTr, XOR_KEY);
+            let _encryptionKey = xorDecrypt(ENCRYPTED_VALUES.encryptionKey, XOR_KEY);
+            let _isProduction = true;
+
+            // Public read-only proxy
+            return {
+              get supabaseUrl() { return _supabaseUrl; },
+              get supabaseKey() { return _supabaseKey; },
+              get tableName() { return _tableName; },
+              get cfTr() { return _cfTr; },
+              get cfSecretKey() { return ''; },
+              get encryptionKey() { return _encryptionKey; },
+              get isProduction() { return _isProduction; },
+              
+              _setConfig(newConfig) {
+                if (newConfig.encryptionKey) _encryptionKey = newConfig.encryptionKey;
+                if (newConfig.isProduction !== undefined) _isProduction = newConfig.isProduction;
+              }
+            };
           };
           
+          const config = createSecureConfig();
+          Object.freeze(config);
+          
           export const initializeConfig = async () => {
-            console.log('🔧 Production config loaded (XOR encrypted)');
+            console.log('🔧 Production config loaded (XOR encrypted + closure protected)');
+            
+            // Get encryption key from URL hash if available
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            const urlEncryptionKey = hashParams.get('key');
+            if (urlEncryptionKey) {
+              config._setConfig({ encryptionKey: urlEncryptionKey });
+            }
+            
             return config;
           };
           
-          export { config };`;
+          export { config };\`;
+
           
           require('fs').writeFileSync('src/js/config.js', configContent);
           console.log('✅ XOR encrypted config file created - ALL values encrypted including table name');

@@ -72,40 +72,191 @@ C:\Users\mat\Desktop\MAT_PrivN_pc_n\
 
 ## 5. Application Workflow
 
-1.  **Local Development**:
-    -   Environment variables (`SUPABASE_URL`, `SUPABASE_KEY`, etc.) are loaded from `env.json` by `load-Env.js`.
-    -   `config.js` then uses these variables to initialize the Supabase client.
+### Local Development
+- Environment variables loaded from `env.json` via `load-Env.js`
+- `config.js` initializes with `window.__ENV` object
+- Localhost detection enables test Turnstile mode
+- No build step required - direct file serving
 
-2.  **Note Creation (`index.html`)**:
-    -   `main.js` is the main entry point. It initializes the UI, loads the settings component using `SettingsUI.js`, and sets up event listeners.
-    -   The user enters a note, chooses encryption and expiration settings, and clicks "Create Secure Note".
-    -   `note.service.js` reads the settings and calls `createNote` from `noteQuery.js`.
-    -   `noteQuery.js` **encrypts the content** (if enabled) using `cryptoActions.js` and sends it to the Supabase backend.
-    -   A unique URL for the note is generated and displayed to the user. `dom.service.js` is used for DOM manipulations, like showing the generated link and feedback messages.
-    -   `whatsappUI.js` handles the logic for the "Share via WhatsApp" button.
-    -   `turnstile.js` manages the Cloudflare Turnstile integration for bot protection.
+### Note Creation Flow (`index.html`)
+1. **Initialization** (`main.js` - PrivacyNoteApp class):
+   - DOM elements cached
+   - Settings UI loaded from `settings.html` and injected into container
+   - `SettingsUI.initialize()` sets up accordion, radio buttons, defaults
+   - `TurnstileService.init()` loads appropriate bot protection
+   - `WhatsAppUI.init()` sets up sharing handlers
+   - Draft note restored from localStorage if exists
 
-3.  **Note Viewing (`note.html`)**:
-    -   The page retrieves the note ID from the URL.
-    -   `note.service.js` calls `getNote` from `noteQuery.js` to fetch the note from Supabase.
-    -   If the note was encrypted, `noteQuery.js` **automatically decrypts the content** using `cryptoActions.js`.
-    -   The note content is displayed, and the note is marked as read in the database, effectively destroying it.
+2. **User Interaction**:
+   - User types note (auto-saved to localStorage)
+   - Character counter updates in real-time
+   - Settings accordion allows encryption toggle + expiration selection
+   - Defaults: encryption=true, expiration=24h
 
-## important: .github\workflows\static.yml:
+3. **Note Creation** (on button click):
+   - `SettingsUI.getCurrentSettings()` retrieves user choices
+   - `NoteService.createNote()` called with content + settings
+   - `noteQuery.createNote()` handles encryption (if enabled) via `cryptoActions.js`
+   - Supabase insert with: content, is_encrypted, expires_in_24h/48h, read_count=0
+   - Returns note ID and generates shareable URL
+   - `DomService` displays link container with copy-to-clipboard functionality
+   - WhatsApp share button enabled with URL
+
+### Note Viewing Flow (`note.html`)
+1. **URL Parsing**:
+   - Note ID extracted from query parameter `?id=xxx`
+   - If no ID: show error "note does not exist"
+
+2. **Note Retrieval**:
+   - `NoteService.viewNote()` orchestrates the flow
+   - `noteQuery.getNote(id)` fetches from Supabase
+   - Validates: read_count=0 (not read), expires_at > now (not expired)
+   - If validation fails: return null → show error
+
+3. **Decryption & Display**:
+   - If `is_encrypted=true`: decrypt via `cryptoActions.decryptData()`
+   - If `is_encrypted=false`: return plain text
+   - Display content with newlines converted to `<br>`
+   - Mark as read: `read_count=1` → note destroyed for future requests
+   - Clean URL (remove query params from browser)
+
+### Error Handling
+- All errors show generic message: "This note does not exist or has been deleted"
+- Prevents information leakage about note status
+- Loading spinner removed on error
 
 ## 6. Build and Deployment
 
--   The project is deployed to GitHub Pages using the `.github/workflows/static.yml` workflow.
--   The workflow triggers on pushes to the `main` branch.
--   During deployment, it generates a `src/js/config.js` file using secrets (`SUPABASE_URL`, `SUPABASE_KEY`, `ENCRYPTION_KEY`, etc.) stored in GitHub Actions. The secrets are XOR encrypted before being written to the config file. This is a good security practice to avoid committing secrets to the repository. The `config.js` file is created with the production values, and the `isProduction` flag is set to `true`.
--   The entire project directory is then uploaded as a GitHub Pages artifact.
+### GitHub Actions Workflow (`.github/workflows/static.yml`)
+- **Trigger**: Push to `main` branch
+- **Process**:
+  1. Checkout repository
+  2. Generate `src/js/config.js` from GitHub Secrets
+  3. Secrets injected: SUPABASE_URL, SUPABASE_KEY, SUPABASE_TABLE_M, CF_TR, CF_SECRET_KEY, ENCRYPTION_KEY
+  4. Set `isProduction: true` in config
+  5. Upload entire directory as GitHub Pages artifact
+  6. Deploy to https://1drive1hb.github.io/PrivacyNote/
 
-## 7. `.gitignore` Analysis
+### Security Notes
+- `config.js` NOT committed to repo (generated at deploy time)
+- Secrets stored in GitHub Actions encrypted vault
+- XOR encryption used for additional secret obfuscation in config file
+- CSP headers in HTML prevent XSS attacks
+- CORS configured for Supabase and Cloudflare domains
 
-The `.gitignore` file correctly excludes:
--   **Secrets**: `.env`, `env.json`, `public/env.js`.
--   **Directories**: `public/`, `private/`.
--   **IDE and System Files**: `/.vscode/`, `/.gemini/`
+## 7. File Organization
 
-This is a robust setup for keeping sensitive information and unnecessary files out of the repository.
+### Core Application Files
+- `index.html` - Main note creation page
+- `note.html` - Note viewing page
+- `load-Env.js` - Environment loader (dev vs prod detection)
+- `config.js` - Configuration (generated/gitignored)
+
+### JavaScript Modules
+**Services** (business logic):
+- `note.service.js` - Note creation/viewing orchestration
+- `dom.service.js` - DOM manipulation utilities
+- `supabase.js` - Supabase client initialization
+- `turnstile.js` - Cloudflare Turnstile bot protection
+- `whatsappUI.js` - WhatsApp sharing functionality
+
+**Actions** (data operations):
+- `noteQuery.js` - Supabase CRUD operations
+- `cryptoActions.js` - AES-256 encryption/decryption
+- `settingsUI.js` - Settings accordion component
+- `oldCry.js` - Legacy crypto (unused)
+
+**Entry Points**:
+- `main.js` - Index page initialization (PrivacyNoteApp class)
+
+### CSS Structure
+- `base.css` - Global styles, variables, layout
+- `components.css` - Buttons, forms, Turnstile widget
+- `note.css` - Note viewing page styles
+- `settings.css` - Settings accordion styles
+- `styles.css` - Import aggregator
+
+### HTML Components
+- `settings.html` - Settings accordion markup (loaded dynamically)
+
+## 8. Security & Privacy
+
+### Encryption Implementation
+- **Algorithm**: AES-256-GCM
+- **Key Derivation**: PBKDF2 with 100,000 iterations, SHA-256
+- **Salt**: Static 'secure-note-salt' (consistent for same key)
+- **IV**: Random 12-byte IV per encryption
+- **Format**: JSON with {iv: [], data: []} arrays
+- **Toggle**: User can disable encryption for plain text storage
+
+### Data Flow Security
+- Client-side encryption happens before Supabase transmission
+- Encryption key stored in config (server-side for backend encryption model)
+- Notes marked read_count=1 immediately after viewing
+- Expired notes rejected at database level (expires_at check)
+- No note recovery mechanism once read/expired
+
+### Bot Protection
+- **Production**: Real Cloudflare Turnstile with sitekey validation
+- **Localhost**: Test mode widget (auto-passes)
+- **Detection**: Hostname-based (github.io vs localhost/192.168.x.x)
+- Submit button disabled until Turnstile verification
+
+## 9. `.gitignore` Configuration
+
+Excluded from version control:
+- **Secrets**: `.env`, `env.json`, `public/env.js`, `src/js/config.js`
+- **Directories**: `public/`, `private/`
+- **IDE/System**: `.vscode/`, `.gemini/`
+- **Logs**: `.rovodev/log/`, `.rovodev/sessions/`
+
+## 10. Known Limitations & Design Decisions
+
+### Character Limits
+- **Visible limit**: 2250 characters (UI warning)
+- **Hard limit**: 10,000 characters (enforced in code)
+- **Database**: No explicit limit (PostgreSQL text type)
+
+### Encryption Key Management
+- Single shared key (not true E2E encryption)
+- Key stored in GitHub Secrets (accessible to server)
+- True E2E would require key in URL hash (future enhancement)
+
+### Note Expiration
+- Time-based (24h/48h) OR read-based (whichever first)
+- No manual deletion option for creator
+- Database cleanup handled by Supabase policies (assumed)
+
+### Browser Compatibility
+- Requires Web Crypto API support (all modern browsers)
+- ES Module support required (no transpilation)
+- localStorage required for draft saving
+
+## 11. Development Workflow
+
+### Local Setup
+1. Create `env.json` in project root:
+```json
+{
+  "SUPABASE_URL": "your-url",
+  "SUPABASE_KEY": "your-key",
+  "SUPABASE_TABLE_M": "table-name",
+  "CF_TR": "cloudflare-sitekey",
+  "CF_SECRET_KEY": "cf-secret",
+  "ENCRYPTION_KEY": "your-encryption-key"
+}
+```
+2. Serve with local HTTP server (e.g., `python -m http.server 8080`)
+3. Access at `http://localhost:8080`
+
+### Production Deployment
+1. Push to `main` branch
+2. GitHub Actions automatically builds and deploys
+3. Secrets injected from repository settings
+4. Live at https://1drive1hb.github.io/PrivacyNote/
+
+### Testing
+- No automated test suite currently
+- Manual testing required for both environments
+- Test Turnstile widget available for localhost
 

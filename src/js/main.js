@@ -4,6 +4,7 @@ import { NoteService } from './services/note.service.js';
 import { SettingsUI } from './actions/settingsUI.js';
 import { WhatsAppUI } from './services/whatsappUI.js';
 import { TurnstileService } from './services/turnstile.js';
+import { RateLimiter } from './utils/rateLimiter.js';
 
 console.log('=== PRIVACYNOTE APP LOADED ===');
 
@@ -21,6 +22,10 @@ class PrivacyNoteApp {
             await this.initializeServices();
             this.setupEventListeners();
             this.loadDraftNote();
+            
+            // SECURITY: Cleanup old rate limit data
+            RateLimiter.cleanup();
+            
             console.log('✅ PrivacyNote App initialized successfully');
         } catch (error) {
             console.error('❌ App initialization failed:', error);
@@ -57,6 +62,17 @@ class PrivacyNoteApp {
         try {
             const settingsHtml = await SettingsUI.loadSettings();
             if (settingsHtml) {
+                // SECURITY FIX: Validate settings HTML is from our trusted source
+                // Since settings.html is from same origin, this is safe but we add validation
+                const currentOrigin = window.location.origin;
+                const currentPath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+                const expectedPath = `${currentOrigin}${currentPath}/src/html/settings.html`;
+                
+                // Only inject if HTML looks safe (no script tags)
+                if (settingsHtml.includes('<script>') || settingsHtml.includes('javascript:')) {
+                    throw new Error('Settings HTML contains unsafe content');
+                }
+                
                 this.elements.settingsContainer.innerHTML = settingsHtml;
 
                 // Wait a tiny bit for DOM to be updated

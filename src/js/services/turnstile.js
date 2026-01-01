@@ -27,6 +27,16 @@ console.warn = function (...args) {
 
 export class TurnstileService {
     static isInitialized = false;
+    // SECURITY: Store token in closure instead of global window object
+    static #turnstileToken = null;
+    
+    static getToken() {
+        return this.#turnstileToken;
+    }
+    
+    static setToken(token) {
+        this.#turnstileToken = token;
+    }
 
     static async init() {
         if (this.isInitialized) return;
@@ -88,7 +98,7 @@ export class TurnstileService {
         `;
 
         // Auto-enable since it's test mode
-        window.lastTurnstileToken = 'test-token-localhost';
+        this.setToken('test-token-localhost');
         this.enableSubmitButton();
 
         console.log('Test Turnstile widget displayed');
@@ -151,7 +161,7 @@ export class TurnstileService {
                 callback: (token) => {
                     console.log('Turnstile verified successfully, token received');
                     this.enableSubmitButton();
-                    window.lastTurnstileToken = token;
+                    TurnstileService.setToken(token);
                 },
                 'error-callback': () => {
                     console.error('Turnstile error occurred');
@@ -160,7 +170,7 @@ export class TurnstileService {
                 'expired-callback': () => {
                     console.log('Turnstile token expired');
                     this.disableSubmitButton();
-                    window.lastTurnstileToken = null;
+                    TurnstileService.setToken(null);
                 },
                 'timeout-callback': () => {
                     console.log('Turnstile challenge timed out');

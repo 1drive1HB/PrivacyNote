@@ -86,7 +86,16 @@ export class NoteService {
 
       const noteContentEl = DomService.getElement('noteContent');
       if (noteContentEl) {
-        noteContentEl.innerHTML = content.replace(/\n/g, '<br>');
+        // SECURITY FIX: Use textContent to prevent XSS, then handle newlines safely
+        noteContentEl.textContent = ''; // Clear first
+        const lines = content.split('\n');
+        lines.forEach((line, index) => {
+          const textNode = document.createTextNode(line);
+          noteContentEl.appendChild(textNode);
+          if (index < lines.length - 1) {
+            noteContentEl.appendChild(document.createElement('br'));
+          }
+        });
         noteContentEl.classList.remove('hidden');
       }
 

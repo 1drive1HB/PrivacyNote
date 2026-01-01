@@ -16,6 +16,7 @@ src/css/.ttt.md
 node_modules/
 
 # Credentials and secrets - NEVER COMMIT THESE
+.rovodev/
 .rovodev/credentials/
 .rovodev/credentials/.env
 rovoDevCLI_start.ps1
@@ -23,3 +24,8 @@ rovoDevCLI_start.ps1
 .env
 *.env
 cleanRovoSession.ps1
+acli.exe
+
+# git rm --cached -r .rovodev/
+# git rm --cached acli.exe
+

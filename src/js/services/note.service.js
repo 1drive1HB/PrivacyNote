@@ -1,4 +1,3 @@
-// src/js/services/note.service.js
 import { DomService } from './dom.service.js';
 import { config } from '../conf/config.js';
 import { parseError, NetworkError } from '../utils/customErrors.js';
@@ -15,14 +14,12 @@ export class NoteService {
     };
   }
 
-  // Note Creation - FIXED VERSION
   static async createNote(content, settings) {
     try {
       const env = this.getEnvironment();
 
-      // FIX: Remove the string comparison - settings.encryption is already boolean
       const isEncrypted = Boolean(settings.encryption);
-      const expiresIn = settings.expiration === '48h' ? 172800 : 86400; // 48h or 24h in seconds
+      const expiresIn = settings.expiration === '48h' ? 172800 : 86400;
 
       const { createNote } = await import('../actions/noteQuery.js');
       const newNote = await createNote(content, expiresIn, isEncrypted);
@@ -31,7 +28,6 @@ export class NoteService {
         throw new Error('Failed to create note');
       }
 
-      // Generate URL with encryption key in hash if encrypted
       const url = this.generateNoteUrl(newNote.id, isEncrypted, env);
       return url;
     } catch (error) {
@@ -52,13 +48,11 @@ export class NoteService {
 
     elements.noteLink.onclick = () => DomService.copyToClipboard(url, elements.copyFeedback);
 
-    // Setup WhatsApp sharing
     if (elements.whatsappBtn) {
       elements.whatsappBtn.setAttribute('data-url', url);
     }
   }
 
-  // Note Viewing - FIXED VERSION with proper error handling
   static async viewNote() {
     try {
       const noteId = this.getNoteIdFromUrl();
@@ -72,7 +66,6 @@ export class NoteService {
       await this.setupEnvironment();
       const noteResult = await this.getNoteContent(noteId);
 
-      // If noteResult is null, it means the note doesn't exist or was already read
       if (noteResult === null) {
         console.log('❌ This note does not exist or has been deleted.');
         this.showError('This note does not exist or has been deleted.');
@@ -81,14 +74,12 @@ export class NoteService {
 
       const { content, markAsRead } = noteResult;
 
-      // Hide loading spinner and show content
       this.hideLoading();
       this.hideError();
 
       const noteContentEl = DomService.getElement('noteContent');
       if (noteContentEl) {
-        // SECURITY FIX: Use textContent to prevent XSS, then handle newlines safely
-        noteContentEl.textContent = ''; // Clear first
+        noteContentEl.textContent = '';
         const lines = content.split('\n');
         lines.forEach((line, index) => {
           const textNode = document.createTextNode(line);
@@ -104,7 +95,6 @@ export class NoteService {
         await markAsRead();
       }
 
-      // Clean URL after reading
       window.history.replaceState({}, document.title, window.location.pathname);
       return true;
 
@@ -125,14 +115,12 @@ export class NoteService {
       const noteQuery = await import('../actions/noteQuery.js');
       const note = await noteQuery.getNote(noteId);
 
-      // If note is null, return null instead of throwing error
       if (note === null) {
         return null;
       }
 
       return note;
     } catch (error) {
-      // For specific errors, return null instead of throwing
       if (error.message.includes('already been read') ||
         error.message.includes('destroyed') ||
         error.message.includes('expired') ||
@@ -140,7 +128,6 @@ export class NoteService {
         return null;
       }
 
-      // Re-throw only unexpected errors
       throw error;
     }
   }
@@ -149,14 +136,12 @@ export class NoteService {
     this.hideLoading();
     this.hideNoteContent();
 
-    // Parse error to get user-friendly message
     const parsedError = parseError(error);
     
     const errorContainer = DomService.getElement('errorContainer');
     const errorMessage = DomService.getElement('errorMessage');
 
     if (errorContainer && errorMessage) {
-      // Build error message with title and action advice
       errorMessage.innerHTML = `
         <strong>${parsedError.userMessage}</strong>
         <p class="error-advice">${parsedError.actionAdvice}</p>
@@ -164,7 +149,6 @@ export class NoteService {
       
       errorContainer.classList.remove('hidden');
       
-      // Add retry button for network errors
       if (parsedError.retryable) {
         const retryBtn = document.createElement('button');
         retryBtn.textContent = 'Retry';

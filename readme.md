@@ -1,196 +1,172 @@
 # PrivacyNote
 
-**[Live Application →](https://1drive1hb.github.io/PrivacyNote/)**
+Live application: https://1drive1hb.github.io/PrivacyNote/
 
-Enterprise-grade secure note sharing with client-side encryption and zero-knowledge architecture. Messages self-destruct after reading, ensuring true privacy.
+PrivacyNote is a secure, one-time note sharing application with client-side encryption and a zero-knowledge design. Notes are encrypted in the browser, and the server never receives plaintext. Each note is deleted after the first successful read.
 
----
-
-## 🔒 Security Features
+## Security features
 
 | Feature | Implementation |
 |---------|----------------|
-| **Encryption** | AES-256-GCM with PBKDF2 key derivation (100,000 iterations) |
-| **Architecture** | Zero-knowledge (server never sees plaintext) |
-| **Self-Destruct** | Automatic deletion after first read |
-| **Input Validation** | Comprehensive sanitization (XSS, SQL injection, pattern detection) |
-| **Rate Limiting** | Client-side: 5 notes/minute |
-| **XSS Protection** | CSP headers + safe DOM manipulation |
-| **Database Security** | Row-level security, CHECK constraints |
+| Encryption | AES-256-GCM with PBKDF2 key derivation (\(100{,}000\) iterations) |
+| Architecture | Zero-knowledge (server does not access plaintext) |
+| One-time access | Automatic deletion after first read |
+| Input validation | Sanitization and pattern-based filtering to reduce injection risk |
+| Rate limiting | Client-side limit of 5 notes per minute |
+| XSS protection | Content Security Policy (CSP) and safe DOM manipulation patterns |
+| Database security | Row-level security, CHECK constraints |
 
-**→ [Full Security Documentation](private/docs/SECURITY.md)**
+Full details: `private/docs/SECURITY.md`
 
----
+## Key features
 
-## ✨ Key Features
+- Client-side encryption using the Web Crypto API
+- One-time read behavior with server-side deletion after viewing
+- Configurable expiration (\(24\) hours or \(48\) hours)
+- Responsive UI with dark mode support
+- Quick sharing via copy link or WhatsApp
+- Bot protection via Cloudflare Turnstile
+- No tracking: no cookies, analytics, or personal data collection
 
-- **🔐 Client-Side Encryption** – All encryption happens in your browser using Web Crypto API
-- **🔥 One-Time Read** – Notes self-destruct immediately after viewing
-- **⏱️ Flexible Expiration** – Choose 24h or 48h lifetime
-- **📱 Mobile-Optimized** – Responsive design with dark mode support
-- **📋 Quick Sharing** – One-click copy link or share via WhatsApp
-- **🤖 Bot Protection** – Cloudflare Turnstile integration
-- **🌐 No Tracking** – No cookies, no analytics, no personal data collection
+## Quick start
 
----
-
-## 🚀 Quick Start
-
-### Create a Note
-1. Visit [PrivacyNote](https://1drive1hb.github.io/PrivacyNote/)
-2. Type your message (max 8,000 characters)
-3. Choose encryption and expiration settings
-4. Click "Create Secure Note"
+### Create a note
+1. Open https://1drive1hb.github.io/PrivacyNote/
+2. Enter your message (maximum \(8{,}000\) characters)
+3. Select encryption and expiration settings
+4. Click “Create Secure Note”
 5. Share the generated link
 
-### View a Note
+### View a note
 1. Open the shared link
-2. Note is displayed **once**
-3. Automatically deleted from server
-4. Link becomes invalid
+2. The note is displayed once
+3. The note is deleted from the server after read
+4. The link becomes invalid
 
----
+## Security guarantees
 
-## 🛡️ Security Guarantees
+### Threats addressed
+- Cross-site scripting (XSS)
+- SQL injection (through validation and database constraints)
+- JavaScript/code injection patterns
+- CSRF protections (where applicable to the flow)
+- Clickjacking mitigations
+- Man-in-the-middle attack mitigation via HTTPS
+- Replay attack mitigations (design-dependent; see security docs)
 
-### ✅ Protected Against
-- Cross-Site Scripting (XSS)
-- SQL Injection
-- JavaScript Code Injection
-- CSRF (Cross-Site Request Forgery)
-- Clickjacking
-- Man-in-the-Middle Attacks
-- Replay Attacks
+### Encryption details
+- Algorithm: AES-256-GCM
+- Key derivation: PBKDF2 with SHA-256
+- Iterations: \(100{,}000\)
+- IV/nonce: Random \(12\)-byte IV per encryption (never reused)
 
-### 🔐 Encryption Details
-- **Algorithm:** AES-256-GCM (Galois/Counter Mode)
-- **Key Derivation:** PBKDF2 with SHA-256
-- **Iterations:** 100,000 (OWASP recommended)
-- **IV:** Random 12 bytes per encryption (never reused)
+### Compliance notes
+- OWASP Top 10 (2021) aligned (see `SECURITY.md` for mapping and scope)
+- GDPR-friendly by design (no personal data intentionally collected or stored)
+- Uses FIPS 140-2 approved algorithms (note: this does not imply the application is FIPS-validated)
 
-### 📊 Compliance
-- ✅ OWASP Top 10 (2021) compliance
-- ✅ GDPR compliant (no personal data stored)
-- ✅ Zero-knowledge architecture
-- ✅ FIPS 140-2 compliant algorithms
+## Project structure
 
----
-
-## 📁 Project Structure
-
-```
+```text
 PrivacyNote/
 ├── src/
 │   ├── js/
-│   │   ├── conf/           # Configuration (dev + prod unified)
-│   │   ├── actions/        # Business logic (encryption, DB)
-│   │   ├── services/       # Core services (DOM, Supabase, Turnstile)
-│   │   └── utils/          # Utilities (validation, rate limiting)
-│   ├── css/                # Modular stylesheets
-│   └── html/               # Dynamic HTML components
+│   │   ├── conf/            # Configuration (dev + prod unified)
+│   │   ├── actions/         # Business logic (encryption, DB)
+│   │   ├── services/        # Core services (DOM, Supabase, Turnstile)
+│   │   └── utils/           # Utilities (validation, rate limiting)
+│   ├── css/                 # Modular stylesheets
+│   └── html/                # Dynamic HTML components
 ├── private/
-│   ├── docs/               # Architecture & security documentation
-│   └── sql/                # Database schema & migrations
-├── index.html              # Note creation page
-└── note.html               # Note viewing page
+│   ├── docs/                # Architecture and security documentation
+│   └── sql/                 # Database schema and migrations
+├── index.html               # Note creation page
+└── note.html                # Note viewing page
 ```
 
----
-
-## 🔧 Technology Stack
+## Technology stack
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | Vanilla JavaScript (ES6 modules), HTML5, CSS3 |
-| **Encryption** | Web Crypto API (AES-256-GCM) |
-| **Database** | Supabase (PostgreSQL) |
-| **Security** | Cloudflare Turnstile, CSP headers |
-| **Hosting** | GitHub Pages (HTTPS enforced) |
-| **CI/CD** | GitHub Actions |
+| Frontend | Vanilla JavaScript (ES modules), HTML5, CSS3 |
+| Encryption | Web Crypto API (AES-256-GCM) |
+| Database | Supabase (PostgreSQL) |
+| Security | Cloudflare Turnstile, CSP headers |
+| Hosting | GitHub Pages (HTTPS) |
+| CI/CD | GitHub Actions |
 
----
-
-## 🧪 Local Development
+## Local development
 
 ### Prerequisites
-- Python 3.x (or any local web server)
-- Modern browser with Web Crypto API support
+- Python \(3.x\) or any local static web server
+- A modern browser with Web Crypto API support
 
 ### Setup
-1. Clone the repository
+1. Clone the repository:
    ```bash
    git clone https://github.com/1drive1hb/PrivacyNote.git
    cd PrivacyNote
    ```
 
-2. Create `env.json` in project root
+2. Create `env.json` in the project root:
    ```json
    {
      "SUPABASE_URL": "https://your-project.supabase.co",
      "SUPABASE_KEY": "your-anon-key",
-     "SUPABASE_TABLE_M": "notes",
-     "CF_TR": "your-turnstile-key",
-     "CF_SECRET_KEY": "your-secret",
-     "ENCRYPTION_KEY": "your-encryption-key"
+     "SUPABASE_TABLE_M": "",
+     "CF_TR": "your-turnstile-site-key",
    }
    ```
 
-3. Start local server
+3. Start a local server:
    ```bash
    python -m http.server 8080
    ```
 
-4. Open `http://localhost:8080`
+4. Open http://localhost:8080
 
----
-
-## 📖 Documentation
+## Documentation
 
 | Document | Description |
 |----------|-------------|
-| [SECURITY.md](private/docs/SECURITY.md) | Comprehensive security documentation |
-| [AGENTS.md](AGENTS.md) | Codebase architecture & developer guide |
-| [ENVlogic.md](private/docs/ENVlogic.md) | Configuration flow (dev vs prod) |
-| [supabase.md](private/docs/supabase.md) | Database schema & RLS policies |
+| `private/docs/SECURITY.md` | Security documentation |
+| `AGENTS.md` | Architecture and developer guide |
+| `private/docs/ENVlogic.md` | Configuration flow (dev vs prod) |
+| `private/docs/supabase.md` | Database schema and RLS policies |
 
----
+## Contributing
 
-## 🤝 Contributing
+This is a personal security project. Contributions are not actively solicited, but responsible vulnerability reports are welcome.
 
-This is a personal security project. While contributions are not actively sought, security vulnerability reports are welcome.
+Security issues: report privately via GitHub Security Advisories  
+https://github.com/1drive1hb/PrivacyNote/security/advisories/new
 
-**Security Issues:** Please report privately via [GitHub Security Advisories](https://github.com/1drive1hb/PrivacyNote/security/advisories/new)
-
----
-
-## 📜 License
+## License
 
 © 2025 PrivacyNote. All rights reserved.
 
-This project is for educational and personal use. Commercial use requires explicit permission.
+This project is provided for educational and personal use. Commercial use requires explicit permission from the author.
 
----
+## Disclaimer
 
-## ⚠️ Disclaimer
-
-PrivacyNote implements industry-standard security practices but **no system is 100% secure**. Users are responsible for:
+PrivacyNote applies industry-standard security practices, but no system is fully secure. You are responsible for:
 - Verifying recipient identity before sharing links
 - Understanding that anyone with the link can read the note once
-- Not using this for highly sensitive/classified information
+- Avoiding use for highly sensitive or classified information
 
-**Best Practices:**
-- Use custom encryption keys for sensitive data (`#key=yourkey` in URL)
-- Share links via secure channels only
-- Verify HTTPS connection (padlock icon)
+Operational best practices:
+- Use a custom encryption key for sensitive content (for example, `#key=yourkey` in the URL, if supported by your build)
+- Share links only via trusted, secure channels
+- Confirm you are using HTTPS before entering sensitive data
 
----
+## Links
 
-## 🔗 Links
+- Live app: https://1drive1hb.github.io/PrivacyNote/
+- GitHub: https://github.com/1drive1hb/PrivacyNote
+- Issues: https://github.com/1drive1hb/PrivacyNote/issues
 
-- **Live App:** https://1drive1hb.github.io/PrivacyNote/
-- **GitHub:** https://github.com/1drive1hb/PrivacyNote
-- **Issues:** https://github.com/1drive1hb/PrivacyNote/issues
+Built by Mat (https://github.com/1drive1hb), 2025
 
----
+***
 
-**Built with 🔒 by [Mat](https://github.com/1drive1hb) | 2025**
+Would you like the tone to read more like an open-source README (community-friendly) or a product/security whitepaper (more formal and compliance-oriented)?

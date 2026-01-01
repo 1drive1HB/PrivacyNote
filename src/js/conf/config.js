@@ -1,11 +1,9 @@
-// src/js/conf/config.js - UNIFIED CONFIG (Dev + Prod)
-// This file is overwritten by GitHub Actions in production with XOR encrypted values
-// In development, it reads from window.__ENV (populated by load-Env.js)
+// Unified configuration manager for dev and production environments
+// Production: XOR-encrypted values injected during build
+// Development: Plain values loaded from env.json via window.__ENV
 
-// Check if running in production (this will be true when GitHub Actions builds)
 const isProductionBuild = typeof XOR_KEY !== 'undefined';
 
-// XOR decryption function (only used in production builds)
 const xorDecrypt = (encoded, key) => {
   try {
     const text = atob(encoded);
@@ -19,9 +17,9 @@ const xorDecrypt = (encoded, key) => {
   }
 };
 
-// SECURITY: Use closure pattern to hide sensitive config
+// Closure pattern prevents console inspection of config values
 const createSecureConfig = () => {
-  // Private variables (hidden from console inspection)
+  // Private variables - inaccessible from browser console
   let _supabaseUrl = '';
   let _supabaseKey = '';
   let _tableName = '';
@@ -30,7 +28,6 @@ const createSecureConfig = () => {
   let _encryptionKey = '';
   let _isProduction = false;
 
-  // Public read-only proxy
   return {
     get supabaseUrl() { return _supabaseUrl; },
     get supabaseKey() { return _supabaseKey; },
@@ -39,8 +36,7 @@ const createSecureConfig = () => {
     get cfSecretKey() { return _cfSecretKey; },
     get encryptionKey() { return _encryptionKey; },
     get isProduction() { return _isProduction; },
-    
-    // Internal setter (not enumerable)
+
     _setConfig(newConfig) {
       if (newConfig.supabaseUrl !== undefined) _supabaseUrl = newConfig.supabaseUrl;
       if (newConfig.supabaseKey !== undefined) _supabaseKey = newConfig.supabaseKey;
@@ -58,7 +54,6 @@ Object.freeze(config);
 
 export const initializeConfig = async () => {
   try {
-    // PRODUCTION PATH: Config built by GitHub Actions with XOR encryption
     if (isProductionBuild) {
       config._setConfig({
         supabaseUrl: xorDecrypt(ENCRYPTED_VALUES.supabaseUrl, XOR_KEY),
@@ -69,8 +64,8 @@ export const initializeConfig = async () => {
         cfSecretKey: '',
         isProduction: true
       });
-      console.log('🔧 Production config loaded (XOR encrypted + closure protected)');
-    } 
+      // Production mode - silent logging
+    }
     // DEVELOPMENT PATH: Load from window.__ENV (set by load-Env.js)
     else {
       // Wait for load-Env.js to populate window.__ENV
@@ -81,7 +76,6 @@ export const initializeConfig = async () => {
       }
 
       if (window.__ENV) {
-        // Determine if localhost
         const hostname = window.location.hostname;
         const isLocalhost = hostname === 'localhost' ||
           hostname === '127.0.0.1' ||
@@ -92,23 +86,25 @@ export const initializeConfig = async () => {
           supabaseKey: window.__ENV.SUPABASE_KEY || '',
           tableName: window.__ENV.SUPABASE_TABLE_M || 'notes',
           cfTr: window.__ENV.CF_TR || '',
-          cfSecretKey: window.__ENV.CF_SECRET_KEY || '',
           encryptionKey: window.__ENV.ENCRYPTION_KEY || '',
           isProduction: !isLocalhost
         });
 
-        // SECURITY: Delete window.__ENV to prevent console access
+        // Clear temporary environment object
         delete window.__ENV;
-        console.log('🔧 Development config loaded from env.json (window.__ENV cleared)');
+        if (!isLocalhost) {
+          // Production mode - no logging
+        } else {
+          console.log('🔧 Development config loaded from env.json (window.__ENV cleared)');
+        }
       }
     }
 
-    // Get encryption key from URL hash if available (overrides default)
+    // Allow custom encryption key via URL hash (#key=xxx)
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const urlEncryptionKey = hashParams.get('key');
     if (urlEncryptionKey) {
       config._setConfig({ encryptionKey: urlEncryptionKey });
-      console.log('🔑 Encryption key overridden from URL hash');
     }
 
     return config;

@@ -1,4 +1,3 @@
-// settingsUI.js
 export class SettingsUI {
     static async loadSettings() {
         try {
@@ -19,11 +18,9 @@ export class SettingsUI {
         const accordionHeaders = document.querySelectorAll('.accordion-header');
 
         accordionHeaders.forEach(header => {
-            // Remove any existing click listeners
             header.replaceWith(header.cloneNode(true));
         });
 
-        // Re-select after cloning
         const newHeaders = document.querySelectorAll('.accordion-header');
 
         newHeaders.forEach(header => {
@@ -31,10 +28,8 @@ export class SettingsUI {
                 const content = header.nextElementSibling;
                 const arrow = header.querySelector('.accordion-arrow');
 
-                // Toggle active class
                 content.classList.toggle('active');
 
-                // Update arrow
                 if (arrow) {
                     arrow.className = content.classList.contains('active')
                         ? 'fas fa-chevron-up accordion-arrow'
@@ -45,16 +40,13 @@ export class SettingsUI {
     }
 
     static initializeRadioButtons() {
-        // Set default settings first
         this.setDefaultSettings();
 
-        // Then add change listeners
         document.addEventListener('change', (e) => {
             if (e.target.type === 'radio') {
                 const radio = e.target;
                 const groupName = radio.name;
 
-                // Update visual state for all radios in group
                 document.querySelectorAll(`[name="${groupName}"]`).forEach(r => {
                     const label = r.closest('.radio-label');
                     if (label) {
@@ -66,7 +58,6 @@ export class SettingsUI {
     }
 
     static setDefaultSettings() {
-        // Set encryption to Enable and expiration to 24h by default
         const encryptionEnable = document.querySelector('[name="encryption"][value="true"]');
         const expiration24h = document.querySelector('[name="expiration"][value="24h"]');
 
@@ -74,7 +65,6 @@ export class SettingsUI {
             encryptionEnable.checked = true;
             expiration24h.checked = true;
 
-            // Update visual state
             document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
                 const label = radio.closest('.radio-label');
                 if (label) {
@@ -89,12 +79,11 @@ export class SettingsUI {
         const encryptionElement = document.querySelector('[name="encryption"]:checked');
         const expirationElement = document.querySelector('[name="expiration"]:checked');
 
-        // Proper boolean conversion
         const encryption = encryptionElement ? encryptionElement.value === 'true' : true;
         const expiration = expirationElement ? expirationElement.value : '24h';
 
         return {
-            encryption: encryption, // This is boolean true/false
+            encryption: encryption,
             expiration: expiration
         };
     }

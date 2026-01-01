@@ -1,6 +1,4 @@
-// src/js/services/dom.service.js
 export class DomService {
-  // Element management
   static getElement(id, required = false) {
     try {
       const el = document.getElementById(id);
@@ -14,7 +12,6 @@ export class DomService {
     }
   }
 
-  // Button states
   static toggleButtonState(button, disabled, text) {
     if (!button) return;
     button.disabled = disabled;
@@ -23,7 +20,6 @@ export class DomService {
       : `<i class="fas fa-lock"></i> ${text}`;
   }
 
-  // Feedback messages
   static showFeedback(element, message, type = 'info') {
     if (!element) return;
     element.textContent = message;
@@ -37,7 +33,6 @@ export class DomService {
     }
   }
 
-  // Clipboard
   static async copyToClipboard(text, feedbackElement = null) {
     try {
       await navigator.clipboard.writeText(text);
@@ -53,7 +48,6 @@ export class DomService {
     }
   }
 
-  // Settings management
   static getSettingValue(name) {
     const radio = document.querySelector(`input[name="${name}"]:checked`);
     return radio ? radio.value : null;
@@ -67,16 +61,12 @@ export class DomService {
     }
   }
 
-  // UI clearing
   static clearUI(elements) {
     if (elements.noteText) elements.noteText.value = '';
     if (elements.linkContainer) elements.linkContainer.classList.add('hidden');
     if (elements.copyFeedback) this.hideFeedback(elements.copyFeedback);
 
-    // Clear localStorage draft
     localStorage.removeItem('privacyNote_draft');
-
-    // Reset character counter
     this.updateCharacterCounter(0);
   }
 

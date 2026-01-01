@@ -1,32 +1,20 @@
-// src/js/utils/inputSanitizer.js
-// Input validation and sanitization utilities
+// Input validation and sanitization for security
 
 export class InputSanitizer {
-  /**
-   * Sanitize text input by removing potentially dangerous characters
-   * while preserving legitimate content
-   */
   static sanitizeText(input) {
     if (typeof input !== 'string') {
       return '';
     }
     
-    // Remove null bytes (can break databases)
     let sanitized = input.replace(/\0/g, '');
-    
-    // Normalize unicode (prevent homograph attacks)
     sanitized = sanitized.normalize('NFKC');
     
     return sanitized;
   }
 
-  /**
-   * Validate note content with strict rules
-   */
   static validateNoteContent(content) {
     const errors = [];
     
-    // Check if content exists
     if (!content || typeof content !== 'string') {
       errors.push('Content must be a valid string');
       return { valid: false, errors };
@@ -34,23 +22,19 @@ export class InputSanitizer {
     
     const trimmed = content.trim();
     
-    // Check minimum length
     if (trimmed.length === 0) {
       errors.push('Note content cannot be empty');
     }
     
-    // Check maximum length (8KB limit to allow for encryption overhead)
-    // 8,000 chars * 1.77 (encryption) = ~14,160 chars < 15,000 DB limit
+    // Max 8,000 chars (accounts for 77% encryption overhead before 15KB DB limit)
     if (trimmed.length > 8000) {
       errors.push('Note content exceeds maximum length of 8,000 characters');
     }
     
-    // Check for null bytes
     if (trimmed.includes('\0')) {
       errors.push('Note contains invalid null bytes');
     }
     
-    // Check for excessive control characters (potential obfuscation)
     const controlCharCount = (trimmed.match(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g) || []).length;
     if (controlCharCount > trimmed.length * 0.1) {
       errors.push('Note contains too many control characters');

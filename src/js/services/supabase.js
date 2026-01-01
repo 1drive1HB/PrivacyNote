@@ -1,4 +1,3 @@
-//src\js\services\supabase.js
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { initializeConfig } from '../conf/config.js';
 

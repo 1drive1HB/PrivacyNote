@@ -131,7 +131,6 @@ MAT_PrivN_Project/
   "SUPABASE_KEY": "eyJxxx...",
   "SUPABASE_TABLE_M": "notes",
   "CF_TR": "cloudflare_turnstile_key",
-  "CF_SECRET_KEY": "secret",
   "ENCRYPTION_KEY": "your-secret-key"
 }
 ```

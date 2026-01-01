@@ -7,7 +7,7 @@ import { TurnstileService } from './services/turnstile.js';
 import { RateLimiter } from './utils/rateLimiter.js';
 import { InputSanitizer } from './utils/inputSanitizer.js';
 
-console.log('=== PRIVACYNOTE APP LOADED ===');
+// App loaded - silent in production for security
 
 class PrivacyNoteApp {
     constructor() {
@@ -27,7 +27,7 @@ class PrivacyNoteApp {
             // SECURITY: Cleanup old rate limit data
             RateLimiter.cleanup();
             
-            console.log('✅ PrivacyNote App initialized successfully');
+            // App initialized successfully - silent in production
         } catch (error) {
             console.error('❌ App initialization failed:', error);
         }
@@ -80,7 +80,7 @@ class PrivacyNoteApp {
                 setTimeout(() => {
                     SettingsUI.initialize();
                     this.settingsLoaded = true;
-                    console.log('✅ Settings initialized successfully');
+                    // Settings initialized successfully - silent in production
                 }, 100);
             }
         } catch (error) {
@@ -147,8 +147,6 @@ class PrivacyNoteApp {
         }
 
         const rawContent = this.elements.noteText.value;
-        
-        // SECURITY: Validate and sanitize input
         const validation = InputSanitizer.validateNoteContent(rawContent);
         
         if (!validation.valid) {
@@ -156,10 +154,8 @@ class PrivacyNoteApp {
             return;
         }
         
-        // Check for suspicious patterns
         const warnings = InputSanitizer.detectSuspiciousPattern(validation.sanitized);
         if (warnings.length > 0) {
-            console.warn('Security warning:', warnings);
             DomService.showFeedback(this.elements.copyFeedback, 'Note contains potentially unsafe content', 'error');
             return;
         }

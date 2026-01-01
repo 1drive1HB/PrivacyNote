@@ -48,7 +48,6 @@ export const createNote = async (content, expiresIn, isEncrypted = false) => {
 
     if (error) {
       console.error('Database insert error:', error);
-      // Check if it's a network error
       if (error.message?.includes('fetch') || error.code === 'PGRST301') {
         throw new NetworkError('Unable to save note to database');
       }
@@ -86,7 +85,6 @@ export const getNote = async (id) => {
 
     if (fetchError) {
       console.error('Fetch error:', fetchError);
-      // Check if it's a network error
       if (fetchError.message?.includes('fetch') || fetchError.code === 'PGRST301') {
         throw new NetworkError('Unable to retrieve note from database');
       }
@@ -99,12 +97,10 @@ export const getNote = async (id) => {
 
     const note = noteData[0];
 
-    // Check if note has been read
     if (note.read_count > 0) {
       throw new NoteAlreadyReadError();
     }
 
-    // Check if note has expired
     if (new Date(note.expires_at) < new Date()) {
       throw new NoteExpiredError();
     }

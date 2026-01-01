@@ -1,7 +1,6 @@
-// src/js/services/turnstile.js
 import { config, initializeConfig } from '../conf/config.js';
 
-// Cloudflare error suppression - add this at the top
+// Suppress expected Cloudflare/GitHub Pages errors
 const originalError = console.error;
 console.error = function (...args) {
     const message = args[0]?.toString() || '';
@@ -27,7 +26,6 @@ console.warn = function (...args) {
 
 export class TurnstileService {
     static isInitialized = false;
-    // SECURITY: Store token in closure instead of global window object
     static #turnstileToken = null;
     
     static getToken() {
@@ -44,17 +42,12 @@ export class TurnstileService {
         try {
             await initializeConfig();
 
-            // FIXED: Only use test mode for localhost, use real Turnstile for GitHub Pages
             const isLocalhost = this.checkIsLocalhost();
             const isGitHubPages = window.location.hostname.includes('github.io');
 
-            console.log(`Environment detected - Localhost: ${isLocalhost}, GitHub Pages: ${isGitHubPages}`);
-
             if (isLocalhost) {
-                console.log('Localhost detected: Using TEST Turnstile');
                 this.showTestTurnstile();
             } else {
-                console.log('Production (GitHub Pages) detected: Using REAL Turnstile');
                 await this.loadRealTurnstile();
             }
 
@@ -101,13 +94,13 @@ export class TurnstileService {
         this.setToken('test-token-localhost');
         this.enableSubmitButton();
 
-        console.log('Test Turnstile widget displayed');
+        // Test widget displayed
     }
 
     static async loadRealTurnstile() {
         const sitekey = config.cfTr || '';
 
-        console.log('Loading real Turnstile with sitekey:', sitekey ? 'Present' : 'Missing');
+        // Loading real Turnstile
 
         if (!sitekey || sitekey === 'undefined' || sitekey === 'null' || !sitekey.startsWith('0x')) {
             console.warn('Invalid Turnstile sitekey, falling back to test mode');
@@ -122,7 +115,7 @@ export class TurnstileService {
             script.defer = true;
 
             script.onload = () => {
-                console.log('Turnstile script loaded successfully');
+                // Turnstile script loaded
                 this.renderRealTurnstile(sitekey);
                 resolve();
             };
@@ -154,12 +147,12 @@ export class TurnstileService {
 
             container.innerHTML = '';
 
-            console.log('Rendering real Turnstile widget');
+            // Rendering widget
 
             const turnstileOptions = {
                 sitekey: sitekey,
                 callback: (token) => {
-                    console.log('Turnstile verified successfully, token received');
+                    // Token received
                     this.enableSubmitButton();
                     TurnstileService.setToken(token);
                 },
@@ -168,18 +161,18 @@ export class TurnstileService {
                     this.disableSubmitButton();
                 },
                 'expired-callback': () => {
-                    console.log('Turnstile token expired');
+                    // Token expired
                     this.disableSubmitButton();
                     TurnstileService.setToken(null);
                 },
                 'timeout-callback': () => {
-                    console.log('Turnstile challenge timed out');
+                    // Challenge timed out
                     this.disableSubmitButton();
                 }
             };
 
             window.turnstile.render(container, turnstileOptions);
-            console.log('Real Turnstile widget rendered');
+            // Widget rendered
 
         } catch (error) {
             console.error('Error rendering real Turnstile:', error);
@@ -192,7 +185,7 @@ export class TurnstileService {
         if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-lock"></i> Create Secure Note';
-            console.log('Submit button enabled');
+            // Submit button enabled
         }
     }
 
@@ -201,7 +194,7 @@ export class TurnstileService {
         if (submitBtn) {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-lock"></i> Complete CAPTCHA';
-            console.log('Submit button disabled');
+            // Submit button disabled
         }
     }
 }
@@ -209,10 +202,10 @@ export class TurnstileService {
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        console.log('DOM loaded, initializing Turnstile');
+        // Initializing Turnstile
         TurnstileService.init();
     });
 } else {
-    console.log('DOM already ready, initializing Turnstile');
+    // Initializing Turnstile
     TurnstileService.init();
 }

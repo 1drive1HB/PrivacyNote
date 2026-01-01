@@ -1,5 +1,4 @@
-// src/js/utils/customErrors.js
-// Custom error classes for better error handling and user experience
+// Custom error classes with user-friendly messages
 
 export class NoteError extends Error {
   constructor(message, type, userMessage, actionAdvice) {
@@ -103,18 +102,13 @@ export class RateLimitError extends NoteError {
   }
 }
 
-/**
- * Parse error and return appropriate custom error
- */
 export function parseError(error) {
-  // Already a custom error
   if (error instanceof NoteError) {
     return error;
   }
 
   const message = error.message?.toLowerCase() || '';
 
-  // Network errors
   if (message.includes('network') || message.includes('fetch') || message.includes('connection')) {
     return new NetworkError(error.message);
   }

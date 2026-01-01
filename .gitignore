@@ -26,5 +26,5 @@ rovoDevCLI_start.ps1
 cleanRovoSession.ps1
 acli.exe
 .vscode/
-
+.vscode
 

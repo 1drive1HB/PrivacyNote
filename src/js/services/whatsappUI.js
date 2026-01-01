@@ -1,4 +1,3 @@
-// src/js/services/whatsappUI.js
 import { DomService } from './dom.service.js';
 
 export class WhatsAppUI {
@@ -29,17 +28,14 @@ export class WhatsAppUI {
         const message = `🔒 Check out this secure note: ${url}`;
         const encodedMessage = encodeURIComponent(message);
         
-        // Detect device type for proper WhatsApp URL
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         const whatsappUrl = isMobile 
             ? `whatsapp://send?text=${encodedMessage}`
             : `https://web.whatsapp.com/send?text=${encodedMessage}`;
 
-        // Open WhatsApp
         const newWindow = window.open(whatsappUrl, '_blank');
         
         if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-            // Fallback for desktop if popup blocked
             window.location.href = `https://api.whatsapp.com/send?text=${encodedMessage}`;
         }
 

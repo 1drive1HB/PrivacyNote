@@ -10,7 +10,7 @@ export const encryptData = async (text, useEncryption = false) => {
     }
 
     // Import your existing config
-    const { config } = await import('../config.js');
+    const { config } = await import('../conf/config.js');
     const encryptionKey = config.encryptionKey;
 
     // Ensure key is proper length for AES (16 or 32 bytes)
@@ -69,7 +69,7 @@ export const decryptData = async (encrypted, useEncryption = false) => {
     }
 
     // Import your existing config
-    const { config } = await import('../config.js');
+    const { config } = await import('../conf/config.js');
     const decryptionKey = config.encryptionKey;
 
     // Ensure key is proper length for AES (16 or 32 bytes)

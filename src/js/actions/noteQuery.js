@@ -1,6 +1,6 @@
 // src/js/actions/noteQuery.js
 import { getSupabaseClient } from '../services/supabase.js';
-import { config } from '../config.js';
+import { config } from '../conf/config.js';
 import { encryptData, decryptData } from './cryptoActions.js';
 import { RateLimiter } from '../utils/rateLimiter.js';
 

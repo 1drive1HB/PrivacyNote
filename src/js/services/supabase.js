@@ -1,6 +1,6 @@
 //src\js\services\supabase.js
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { initializeConfig } from '../config.js'
+import { initializeConfig } from '../conf/config.js';
 
 let supabaseClient = null
 

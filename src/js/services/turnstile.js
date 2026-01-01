@@ -1,5 +1,5 @@
 // src/js/services/turnstile.js
-import { config, initializeConfig } from '../config.js';
+import { config, initializeConfig } from '../conf/config.js';
 
 // Cloudflare error suppression - add this at the top
 const originalError = console.error;

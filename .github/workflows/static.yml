@@ -29,101 +29,14 @@ jobs:
         with:
           node-version: "18"
 
-      - name: Create XOR encrypted config
-        run: |
-          node << 'EOF'
-          // Simple XOR encryption
-          function xorEncrypt(text, key) {
-            let result = '';
-            for (let i = 0; i < text.length; i++) {
-              result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-            }
-            return btoa(result); // Base64 encode the result
-          }
-
-          // Generate a unique key for this build
-          const key = "pn_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
-
-          const secrets = {
-            supabaseUrl: "${{ secrets.SUPABASE_URL }}",
-            supabaseKey: "${{ secrets.SUPABASE_KEY }}",
-            tableName: "${{ secrets.SUPABASE_TABLE_M || 'notes' }}",
-            cfTr: "${{ secrets.CF_TR }}", 
-            encryptionKey: "${{ secrets.ENCRYPTION_KEY }}"
-          };
-
-          const encrypted = {};
-          for (const [secretKey, value] of Object.entries(secrets)) {
-            encrypted[secretKey] = value ? xorEncrypt(value, key) : '';
-          }
-
-          const configContent = '// XOR ENCRYPTED CONFIG - SECURITY HARDENED\n' +
-          'const XOR_KEY = "' + key + '";\n' +
-          '\n' +
-          'const xorDecrypt = (encoded, key) => {\n' +
-          '  try {\n' +
-          '    const text = atob(encoded);\n' +
-          '    let result = "";\n' +
-          '    for (let i = 0; i < text.length; i++) {\n' +
-          '      result += String.fromCharCode(text.charCodeAt(i) ^ key.charCodeAt(i % key.length));\n' +
-          '    }\n' +
-          '    return result;\n' +
-          '  } catch {\n' +
-          '    return "";\n' +
-          '  }\n' +
-          '};\n' +
-          '\n' +
-          'const ENCRYPTED_VALUES = ' + JSON.stringify(encrypted, null, 2) + ';\n' +
-          '\n' +
-          '// SECURITY: Use closure pattern to hide sensitive config\n' +
-          'const createSecureConfig = () => {\n' +
-          '  // Private variables - decrypt once and store\n' +
-          '  let _supabaseUrl = xorDecrypt(ENCRYPTED_VALUES.supabaseUrl, XOR_KEY);\n' +
-          '  let _supabaseKey = xorDecrypt(ENCRYPTED_VALUES.supabaseKey, XOR_KEY);\n' +
-          '  let _tableName = xorDecrypt(ENCRYPTED_VALUES.tableName, XOR_KEY);\n' +
-          '  let _cfTr = xorDecrypt(ENCRYPTED_VALUES.cfTr, XOR_KEY);\n' +
-          '  let _encryptionKey = xorDecrypt(ENCRYPTED_VALUES.encryptionKey, XOR_KEY);\n' +
-          '  let _isProduction = true;\n' +
-          '\n' +
-          '  // Public read-only proxy\n' +
-          '  return {\n' +
-          '    get supabaseUrl() { return _supabaseUrl; },\n' +
-          '    get supabaseKey() { return _supabaseKey; },\n' +
-          '    get tableName() { return _tableName; },\n' +
-          '    get cfTr() { return _cfTr; },\n' +
-          '    get cfSecretKey() { return ""; },\n' +
-          '    get encryptionKey() { return _encryptionKey; },\n' +
-          '    get isProduction() { return _isProduction; },\n' +
-          '    \n' +
-          '    _setConfig(newConfig) {\n' +
-          '      if (newConfig.encryptionKey) _encryptionKey = newConfig.encryptionKey;\n' +
-          '      if (newConfig.isProduction !== undefined) _isProduction = newConfig.isProduction;\n' +
-          '    }\n' +
-          '  };\n' +
-          '};\n' +
-          '\n' +
-          'const config = createSecureConfig();\n' +
-          'Object.freeze(config);\n' +
-          '\n' +
-          'export const initializeConfig = async () => {\n' +
-          '  console.log("🔧 Production config loaded (XOR encrypted + closure protected)");\n' +
-          '  \n' +
-          '  // Get encryption key from URL hash if available\n' +
-          '  const hashParams = new URLSearchParams(window.location.hash.substring(1));\n' +
-          '  const urlEncryptionKey = hashParams.get("key");\n' +
-          '  if (urlEncryptionKey) {\n' +
-          '    config._setConfig({ encryptionKey: urlEncryptionKey });\n' +
-          '  }\n' +
-          '  \n' +
-          '  return config;\n' +
-          '};\n' +
-          '\n' +
-          'export { config };';
-
-
-          require('fs').writeFileSync('src/js/config.js', configContent);
-          console.log('✅ XOR encrypted config file created - ALL values encrypted including table name');
-          EOF
+      - name: Build production config
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_TABLE_M: ${{ secrets.SUPABASE_TABLE_M }}
+          CF_TR: ${{ secrets.CF_TR }}
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+        run: node src/js/conf/build-config.js
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

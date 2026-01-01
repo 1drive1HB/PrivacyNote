@@ -6,13 +6,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (isProduction) {
       // In production, config is already built into config.js via GitHub Actions
-      console.log('✅ Production environment - config injected via GitHub Secrets');
+      console.log('Production environment - config injected via GitHub Secrets');
       window.__ENV = {};
       return;
     }
 
     // Only in local development: try to load env.json
-    console.log('🔧 Local development - loading env.json');
+    console.log('Local development - loading env.json');
 
     // FIXED: Use correct path for env.json based on current page
     const isNotePage = window.location.pathname.includes('note.html');
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       CF_SECRET_KEY: env.CF_SECRET_KEY,
       ENCRYPTION_KEY: env.ENCRYPTION_KEY
     };
-    console.log('✅ Local environment loaded successfully (will be cleared after init)');
+    console.log('Local environment loaded successfully (will be cleared after init)');
 
   } catch (error) {
     console.error('❌ Error loading environment:', error.message);

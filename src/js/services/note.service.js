@@ -1,6 +1,6 @@
 // src/js/services/note.service.js
 import { DomService } from './dom.service.js';
-import { config } from '../config.js';
+import { config } from '../conf/config.js';
 
 export class NoteService {
   static getEnvironment() {

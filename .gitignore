@@ -14,3 +14,12 @@ src/css/.ttt.md
 # System files
 .DS_Store
 node_modules/
+
+# Credentials and secrets - NEVER COMMIT THESE
+.rovodev/credentials/
+.rovodev/credentials/.env
+rovoDevCLI_start.ps1
+*.local.ps1
+.env
+*.env
+cleanRovoSession.ps1

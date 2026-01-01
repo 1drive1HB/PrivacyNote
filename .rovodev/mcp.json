@@ -1,0 +1,68 @@
+{
+  "mcpServers": {
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    },
+    "mcp-sequentialthinking-tools": {
+      "command": "npx",
+      "args": ["-y", "mcp-sequentialthinking-tools"],
+      "env": {
+        "MAX_HISTORY_SIZE": "1000"
+      }
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    // DISABLED MCP SERVERS (commented out to prevent startup errors):
+    // "gitmcp": {
+    //   "url": "${GEMINI_GITMCP_URL}",
+    //   "type": "sse"
+    //   // ERROR: Authentication failed - MCP server requires valid credentials
+    //   // Check GEMINI_GITMCP_URL environment variable and server status
+    // },
+    // "supabase": {
+    //   "command": "cmd",
+    //   "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-postgres", "${SUPABASE_POSTGRES_CONNECTION_STRING}"]
+    //   // ERROR: Failed to start STDIO MCP server
+    //   // Check SUPABASE_POSTGRES_CONNECTION_STRING and database connectivity
+    // },
+    // "shadcn": {
+    //   "url": "https://www.shadcn.io/api/mcp"
+    //   // ERROR: Failed to start third-party MCP server
+    //   // The shadcn.io MCP endpoint may not be available or functional
+    // },
+    "context7": {
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "Authorization": "${CONTEXT7_API_KEY}"
+      }
+    },
+    "exa": {
+      "url": "https://mcp.exa.ai/mcp",
+      "headers": {
+        "Authorization": "${EXA_API_KEY}"
+      }
+    },
+    "browsermcp": {
+      "command": "npx",
+      "args": ["@browsermcp/mcp@latest"]
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["chrome-devtools-mcp@latest"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    }
+  }
+}

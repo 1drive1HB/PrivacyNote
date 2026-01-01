@@ -1,0 +1,5 @@
+prompts:
+  - name: custom_coderabbit
+    description: Custom CodeRabbit review with focus on refactoring, security, testing, and best practices
+    content_file: custom_coderabbit.md
+  

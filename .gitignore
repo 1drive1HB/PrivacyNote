@@ -25,7 +25,6 @@ rovoDevCLI_start.ps1
 *.env
 cleanRovoSession.ps1
 acli.exe
+.vscode/
 
-# git rm --cached -r .rovodev/
-# git rm --cached acli.exe
 

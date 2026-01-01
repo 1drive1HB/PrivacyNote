@@ -5,6 +5,7 @@ import { SettingsUI } from './actions/settingsUI.js';
 import { WhatsAppUI } from './services/whatsappUI.js';
 import { TurnstileService } from './services/turnstile.js';
 import { RateLimiter } from './utils/rateLimiter.js';
+import { InputSanitizer } from './utils/inputSanitizer.js';
 
 console.log('=== PRIVACYNOTE APP LOADED ===');
 
@@ -145,14 +146,21 @@ class PrivacyNoteApp {
             return;
         }
 
-        const content = this.elements.noteText.value.trim();
-        if (!content) {
-            DomService.showFeedback(this.elements.copyFeedback, 'Please enter note content', 'error');
+        const rawContent = this.elements.noteText.value;
+        
+        // SECURITY: Validate and sanitize input
+        const validation = InputSanitizer.validateNoteContent(rawContent);
+        
+        if (!validation.valid) {
+            DomService.showFeedback(this.elements.copyFeedback, validation.errors[0], 'error');
             return;
         }
-
-        if (content.length > 10000) {
-            DomService.showFeedback(this.elements.copyFeedback, 'Note exceeds 10,000 character limit', 'error');
+        
+        // Check for suspicious patterns
+        const warnings = InputSanitizer.detectSuspiciousPattern(validation.sanitized);
+        if (warnings.length > 0) {
+            console.warn('Security warning:', warnings);
+            DomService.showFeedback(this.elements.copyFeedback, 'Note contains potentially unsafe content', 'error');
             return;
         }
 
@@ -160,7 +168,7 @@ class PrivacyNoteApp {
 
         try {
             const settings = SettingsUI.getCurrentSettings();
-            const url = await NoteService.createNote(content, settings);
+            const url = await NoteService.createNote(validation.sanitized, settings);
 
             NoteService.displayNoteLink(url, this.elements);
             DomService.showFeedback(this.elements.copyFeedback, 'Secure note created successfully!', 'success');

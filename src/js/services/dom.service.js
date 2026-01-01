@@ -85,9 +85,9 @@ export class DomService {
     if (charCount) {
       charCount.textContent = count.toLocaleString();
 
-      if (count > 2250) {
+      if (count > 8000) {
         charCount.style.color = '#dc2626';
-      } else if (count > 1125) {
+      } else if (count > 3500) {
         charCount.style.color = '#ea580c';
       } else {
         charCount.style.color = '';

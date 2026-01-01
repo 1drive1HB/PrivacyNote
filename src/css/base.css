@@ -88,9 +88,28 @@ h1 {
   margin-bottom: 0.25rem;
 }
 
+.footer-text .footer-title {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.footer-text .footer-subtitle {
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
 .footer-text .small {
   font-size: 0.875rem;
   color: var(--text-light);
+}
+
+/* Android-specific: Stack footer lines on small screens */
+@media (max-width: 480px) {
+  .footer-text .footer-title,
+  .footer-text .footer-subtitle {
+    display: block;
+    width: 100%;
+  }
 }
 
 .footer-turnstile {
@@ -119,23 +138,6 @@ h1 {
 }
 
 .hidden { display: none !important; }
-
-@media (max-width: 768px) {
-  .container { padding: 1.5rem; }
-  .header { flex-direction: column; text-align: center; }
-  h1 { font-size: 1.8rem; }
-  
-  .footer-content {
-    flex-direction: column;
-    text-align: center;
-    gap: 1.5rem;
-  }
-  
-  .footer-text {
-    text-align: center;
-    min-width: 100%;
-  }
-}
 
 @media (prefers-color-scheme: dark) {
   body { background: var(--dark-bg); color: var(--dark-text); }

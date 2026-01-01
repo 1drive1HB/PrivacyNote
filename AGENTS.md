@@ -19,11 +19,16 @@
 - **Deployment:** GitHub Pages via GitHub Actions
 
 ### Key Security Features
-1. **Client-side encryption** - All encryption happens in the browser
+1. **Client-side encryption** - All encryption happens in the browser (AES-256-GCM)
 2. **Self-destructing notes** - Automatic deletion after first read
-3. **Rate limiting** - Client-side protection against abuse
-4. **Config obfuscation** - XOR encryption for production secrets
-5. **CSP headers** - Content Security Policy for XSS protection
+3. **Input validation & sanitization** - `InputSanitizer` utility prevents injection attacks
+4. **Rate limiting** - Client-side protection against abuse (5 notes/minute)
+5. **Config obfuscation** - XOR encryption for production secrets
+6. **CSP headers** - Content Security Policy for XSS protection
+7. **UUID validation** - Prevents SQL injection on note retrieval
+8. **Database constraints** - Content length (15KB) and read count (0-1) limits
+9. **XSS protection** - Uses `textContent` instead of `innerHTML` for user content
+10. **Pattern detection** - Blocks suspicious HTML/JavaScript in note content
 
 ---
 
@@ -250,17 +255,20 @@ MAT_PrivN_Project/
 **Database Schema (notes table):**
 ```sql
 - id: UUID (primary key)
-- content: TEXT (encrypted or plain)
+- content: TEXT (max 15KB via CHECK constraint)
 - is_encrypted: BOOLEAN
 - expires_in_24h: BOOLEAN
 - expires_in_48h: BOOLEAN
-- read_count: INTEGER
+- read_count: INTEGER (0 or 1 only via CHECK constraint)
 - created_at: TIMESTAMP
 - expires_at: TIMESTAMP
 ```
 
 **Security:**
-- Rate limiting (5 notes/minute)
+- Rate limiting (5 notes/minute client-side)
+- UUID validation (prevents injection)
+- Content length constraint (15KB database limit)
+- Read count constraint (0-1 only)
 - Atomic read-count increment
 - Expiration validation
 
@@ -283,6 +291,23 @@ MAT_PrivN_Project/
 
 ### Utilities
 
+#### `src/js/utils/inputSanitizer.js`
+**Purpose:** Input validation and sanitization for security
+
+**Key Methods:**
+- `sanitizeText(input)` - Remove null bytes, normalize unicode
+- `validateNoteContent(content)` - Comprehensive content validation
+- `validateUUID(uuid)` - UUID format validation
+- `escapeHTML(text)` - Prevent XSS attacks
+- `detectSuspiciousPattern(content)` - Detect malicious patterns
+
+**Validation Rules:**
+- Max length: 10,000 characters
+- No null bytes (\0)
+- Control character limit: <10% of content
+- Blocks: `<script>`, `javascript:`, `onclick=`, `<iframe>`, etc.
+- Detects: Repeated chars (>50), excessive newlines (>500)
+
 #### `src/js/utils/rateLimiter.js`
 **Purpose:** Client-side rate limiting
 
@@ -295,6 +320,8 @@ MAT_PrivN_Project/
 
 **Default Limits:**
 - Note creation: 5 per minute
+
+**Security Note:** Client-side only, can be bypassed. Consider server-side rate limiting.
 
 ---
 
@@ -395,28 +422,50 @@ MAT_PrivN_Project/
 
 ## Security Best Practices
 
+### Input Validation & Sanitization
+- **Always validate on client AND server** (client validation can be bypassed)
+- Use `InputSanitizer` for all user inputs
+- Validate UUID format before database queries
+- Check content length before encryption (10KB limit)
+- Block suspicious patterns (script tags, javascript:, etc.)
+
+### XSS Prevention
+- **NEVER use `innerHTML` with user content** - Use `textContent` instead
+- Implement CSP headers on all pages
+- Escape HTML entities when necessary
+- Validate external HTML (like settings.html) before injection
+
 ### Config Management
 - Never commit `env.json` (in `.gitignore`)
 - Use GitHub Secrets for production
-- Rotate encryption keys regularly
-- XOR obfuscation prevents casual inspection
+- Rotate encryption keys regularly (redeploy changes XOR key)
+- XOR obfuscation prevents casual inspection (not real encryption)
 
 ### Encryption
-- Client-side only (zero-knowledge)
-- Strong key derivation (PBKDF2)
-- Random IVs per encryption
-- Graceful degradation (fallback to plain)
+- Client-side only (zero-knowledge architecture)
+- Strong key derivation (PBKDF2, 100,000 iterations)
+- Random IVs per encryption (never reuse)
+- AES-256-GCM (authenticated encryption)
 
 ### Rate Limiting
-- Client-side first defense
-- Consider server-side limits via Supabase RLS
+- Client-side first defense (5 notes/minute)
+- Consider server-side limits via Supabase Edge Functions
 - Cleanup old data periodically
+- **Note:** Client-side can be bypassed by clearing localStorage
+
+### Database Security
+- Enable Row-Level Security (RLS) policies
+- Use CHECK constraints for validation
+- Parameterized queries only (Supabase handles this)
+- UUID validation prevents injection
+- Automatic cleanup via triggers + cron
 
 ### CSP Headers
-- Restrict script sources
-- Block inline eval
+- Restrict script sources (self + trusted CDNs)
+- Block inline eval (except Turnstile requirement)
 - Limit connect-src to known domains
-- Frame ancestors for Turnstile
+- Frame ancestors for Turnstile widget only
+- **Note:** `unsafe-inline` required for Cloudflare Turnstile
 
 ---
 

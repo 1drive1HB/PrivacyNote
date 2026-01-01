@@ -53,8 +53,15 @@ export const createNote = async (content, expiresIn, isEncrypted = false) => {
 
 export const getNote = async (id) => {
   try {
-    if (!id) {
+    // SECURITY: Validate UUID format to prevent injection
+    if (!id || typeof id !== 'string') {
       return null;
+    }
+    
+    // Basic UUID validation
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      throw new Error('Invalid note ID format');
     }
 
     const supabase = await getSupabaseClient();

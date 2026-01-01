@@ -1,6 +1,7 @@
 // src/js/services/note.service.js
 import { DomService } from './dom.service.js';
 import { config } from '../conf/config.js';
+import { parseError, NetworkError } from '../utils/customErrors.js';
 
 export class NoteService {
   static getEnvironment() {
@@ -148,17 +149,35 @@ export class NoteService {
     this.hideLoading();
     this.hideNoteContent();
 
+    // Parse error to get user-friendly message
+    const parsedError = parseError(error);
+    
     const errorContainer = DomService.getElement('errorContainer');
     const errorMessage = DomService.getElement('errorMessage');
 
     if (errorContainer && errorMessage) {
-      // Use a generic user-friendly message
-      errorMessage.textContent = 'This note does not exist or has been deleted.';
+      // Build error message with title and action advice
+      errorMessage.innerHTML = `
+        <strong>${parsedError.userMessage}</strong>
+        <p class="error-advice">${parsedError.actionAdvice}</p>
+      `;
+      
       errorContainer.classList.remove('hidden');
+      
+      // Add retry button for network errors
+      if (parsedError.retryable) {
+        const retryBtn = document.createElement('button');
+        retryBtn.textContent = 'Retry';
+        retryBtn.className = 'retry-btn';
+        retryBtn.onclick = () => {
+          window.location.reload();
+        };
+        errorMessage.appendChild(retryBtn);
+      }
     }
   }
 
-  static showError(message) {
+  static showError(message, isHtml = false) {
     this.hideLoading();
     this.hideNoteContent();
     this.hideInfo();
@@ -167,7 +186,11 @@ export class NoteService {
     const errorMessage = DomService.getElement('errorMessage');
 
     if (errorContainer && errorMessage) {
-      errorMessage.textContent = message;
+      if (isHtml) {
+        errorMessage.innerHTML = message;
+      } else {
+        errorMessage.textContent = message;
+      }
       errorContainer.classList.remove('hidden');
     }
   }

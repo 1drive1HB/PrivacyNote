@@ -3,13 +3,21 @@ import { getSupabaseClient } from '../services/supabase.js';
 import { config } from '../conf/config.js';
 import { encryptData, decryptData } from './cryptoActions.js';
 import { RateLimiter } from '../utils/rateLimiter.js';
+import { 
+  NetworkError, 
+  NoteNotFoundError, 
+  NoteAlreadyReadError, 
+  NoteExpiredError,
+  DecryptionError,
+  RateLimitError
+} from '../utils/customErrors.js';
 
 export const createNote = async (content, expiresIn, isEncrypted = false) => {
   try {
     // SECURITY: Rate limiting - 5 notes per minute
     const rateCheck = RateLimiter.checkLimit('createNote', 5, 60000);
     if (!rateCheck.allowed) {
-      throw new Error(rateCheck.message);
+      throw new RateLimitError(60);
     }
     
     const supabase = await getSupabaseClient();
@@ -40,6 +48,10 @@ export const createNote = async (content, expiresIn, isEncrypted = false) => {
 
     if (error) {
       console.error('Database insert error:', error);
+      // Check if it's a network error
+      if (error.message?.includes('fetch') || error.code === 'PGRST301') {
+        throw new NetworkError('Unable to save note to database');
+      }
       throw new Error(error.message || 'Failed to create note');
     }
 
@@ -74,23 +86,27 @@ export const getNote = async (id) => {
 
     if (fetchError) {
       console.error('Fetch error:', fetchError);
-      throw new Error('Note not found or has been deleted');
+      // Check if it's a network error
+      if (fetchError.message?.includes('fetch') || fetchError.code === 'PGRST301') {
+        throw new NetworkError('Unable to retrieve note from database');
+      }
+      throw new NoteNotFoundError();
     }
 
     if (!noteData || noteData.length === 0) {
-      return null;
+      throw new NoteNotFoundError();
     }
 
     const note = noteData[0];
 
     // Check if note has been read
     if (note.read_count > 0) {
-      throw new Error('This note has already been read and destroyed');
+      throw new NoteAlreadyReadError();
     }
 
     // Check if note has expired
     if (new Date(note.expires_at) < new Date()) {
-      throw new Error('This note has expired');
+      throw new NoteExpiredError();
     }
 
     let content = note.content;
@@ -100,7 +116,7 @@ export const getNote = async (id) => {
         content = await decryptData(note.content, true);
       } catch (decryptError) {
         console.error('Decryption failed:', decryptError);
-        throw new Error('Unable to decrypt this note. It may have been encrypted with a different key.');
+        throw new DecryptionError();
       }
     } else {
       content = await decryptData(note.content, false);

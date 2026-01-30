@@ -5,14 +5,10 @@ let supabaseClient = null
 
 export const getSupabaseClient = async () => {
   if (!supabaseClient) {
-    console.log('Initializing Supabase client...');
-    
     const config = await initializeConfig();
     
     if (!config.supabaseUrl || !config.supabaseKey) {
-      const errorMsg = 'Missing Supabase configuration';
-      console.error(errorMsg);
-      throw new Error(errorMsg);
+      throw new Error('Missing Supabase configuration');
     }
     
     try {
@@ -32,7 +28,6 @@ export const getSupabaseClient = async () => {
       );
       
     } catch (error) {
-      console.error('Supabase client initialization failed:', error.message);
       throw error;
     }
   }

@@ -54,7 +54,6 @@ MAT_PrivN_Project/
 │       ├── actions/            # Business logic
 │       │   ├── cryptoActions.js    # AES-256 encryption/decryption
 │       │   ├── noteQuery.js        # Supabase CRUD operations
-│       │   ├── oldCry.js           # Legacy crypto (kept for reference)
 │       │   └── settingsUI.js       # Settings UI controller
 │       ├── services/           # Core services
 │       │   ├── dom.service.js      # DOM manipulation utilities
@@ -63,6 +62,8 @@ MAT_PrivN_Project/
 │       │   ├── turnstile.js        # Cloudflare Turnstile integration
 │       │   └── whatsappUI.js       # WhatsApp sharing feature
 │       ├── utils/
+│       │   ├── customErrors.js     # Custom error classes with user-friendly messages
+│       │   ├── inputSanitizer.js   # Input validation and sanitization
 │       │   └── rateLimiter.js      # Client-side rate limiting
 │       ├── load-Env.js         # Development environment loader
 │       └── main.js             # Application entry point
@@ -285,6 +286,7 @@ MAT_PrivN_Project/
 - `initialize()` - Setup UI
 - `getCurrentSettings()` - Get form values
 - `resetSettings()` - Restore defaults
+- `closeAccordion()` - Close settings accordion (used on clear)
 
 ---
 
@@ -301,11 +303,33 @@ MAT_PrivN_Project/
 - `detectSuspiciousPattern(content)` - Detect malicious patterns
 
 **Validation Rules:**
-- Max length: 10,000 characters
+- Max length: 8,000 characters (accounts for encryption overhead before 15KB DB limit)
 - No null bytes (\0)
 - Control character limit: <10% of content
 - Blocks: `<script>`, `javascript:`, `onclick=`, `<iframe>`, etc.
 - Detects: Repeated chars (>50), excessive newlines (>500)
+
+#### `src/js/utils/customErrors.js`
+**Purpose:** Custom error classes with user-friendly messages
+
+**Error Classes:**
+- `NoteError` - Base error class with type, userMessage, and actionAdvice
+- `NetworkError` - Network connection failures (retryable)
+- `NoteNotFoundError` - Note doesn't exist or deleted
+- `NoteAlreadyReadError` - Note has been read (one-time read)
+- `NoteExpiredError` - Note expired based on time limit
+- `DecryptionError` - Failed to decrypt note content
+- `ValidationError` - Invalid input validation
+- `RateLimitError` - Too many requests (includes retryAfter)
+
+**Functions:**
+- `parseError(error)` - Converts generic errors to specific NoteError types
+
+**Features:**
+- User-friendly error messages
+- Actionable advice for users
+- Retryable flag for network errors
+- Consistent error handling across app
 
 #### `src/js/utils/rateLimiter.js`
 **Purpose:** Client-side rate limiting
@@ -330,7 +354,7 @@ MAT_PrivN_Project/
 **Purpose:** Main note creation interface
 
 **Features:**
-- Textarea with character counter (2250 max)
+- Textarea with character counter (8000 max)
 - Settings accordion (encryption + expiration)
 - Link display with copy/WhatsApp share
 - Cloudflare Turnstile widget
@@ -425,7 +449,7 @@ MAT_PrivN_Project/
 - **Always validate on client AND server** (client validation can be bypassed)
 - Use `InputSanitizer` for all user inputs
 - Validate UUID format before database queries
-- Check content length before encryption (10KB limit)
+- Check content length before encryption (8KB limit)
 - Block suspicious patterns (script tags, javascript:, etc.)
 
 ### XSS Prevention

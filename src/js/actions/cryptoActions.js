@@ -56,7 +56,6 @@ export const encryptData = async (text, useEncryption = false) => {
     return result;
 
   } catch (error) {
-    console.error('❌ Encryption failed, storing as plain text:', error);
     return text; // Fallback to plain text
   }
 }
@@ -64,7 +63,6 @@ export const encryptData = async (text, useEncryption = false) => {
 export const decryptData = async (encrypted, useEncryption = false) => {
   try {
     if (!useEncryption) {
-      console.log('🔓 No encryption - returning plain text');
       return encrypted; // Return as-is when no encryption
     }
 
@@ -111,10 +109,7 @@ export const decryptData = async (encrypted, useEncryption = false) => {
     return decoder.decode(decrypted);
 
   } catch (error) {
-    console.error('❌ Decryption failed:', error);
-
-    // If decryption fails, try to return as plain text
-    console.log('🔄 Returning as plain text (decryption failed)');
+    // If decryption fails, return as plain text
     return encrypted;
   }
 }

@@ -58,7 +58,6 @@ export class NoteService {
       const noteId = this.getNoteIdFromUrl();
 
       if (!noteId) {
-        console.log('❌ This note does not exist or has been deleted.');
         this.showError('This note does not exist or has been deleted.');
         return false;
       }
@@ -67,7 +66,6 @@ export class NoteService {
       const noteResult = await this.getNoteContent(noteId);
 
       if (noteResult === null) {
-        console.log('❌ This note does not exist or has been deleted.');
         this.showError('This note does not exist or has been deleted.');
         return false;
       }

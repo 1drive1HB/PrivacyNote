@@ -8,7 +8,7 @@
 
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://esm.sh;
+    script-src 'self' 'unsafe-inline' https://esm.sh;
     style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com;
     font-src 'self' https://cdnjs.cloudflare.com;
     img-src 'self' https: data:;
@@ -88,7 +88,6 @@
     import { NoteService } from './src/js/services/note.service.js';
 
     document.addEventListener('DOMContentLoaded', async () => {
-      console.log('=== NOTE PAGE LOADED - USING NOTE.SERVICE.JS ===');
       await NoteService.viewNote();
     });
   </script>

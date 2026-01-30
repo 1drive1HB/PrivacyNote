@@ -92,11 +92,6 @@ export const initializeConfig = async () => {
 
         // Clear temporary environment object
         delete window.__ENV;
-        if (!isLocalhost) {
-          // Production mode - no logging
-        } else {
-          console.log('🔧 Development config loaded from env.json (window.__ENV cleared)');
-        }
       }
     }
 

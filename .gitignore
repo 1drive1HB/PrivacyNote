@@ -8,12 +8,14 @@ public/
 private/
 /.vscode/
 /.trash/
+
 # Temporary files
 src/css/.ttt.md
 /.gemini/
 # System files
 .DS_Store
 node_modules/
+todo.md
 
 # Credentials and secrets - NEVER COMMIT THESE
 .rovodev/

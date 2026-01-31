@@ -89,7 +89,27 @@ export class SettingsUI {
     }
 
     static resetSettings() {
-        this.setDefaultSettings();
+        // Reset to default values
+        const encryptionEnable = document.querySelector('[name="encryption"][value="true"]');
+        const expiration24h = document.querySelector('[name="expiration"][value="24h"]');
+
+        if (encryptionEnable && expiration24h) {
+            encryptionEnable.checked = true;
+            expiration24h.checked = true;
+
+            // Remove all selected classes first
+            document.querySelectorAll('.radio-label').forEach(label => {
+                label.classList.remove('selected');
+            });
+
+            // Add selected class to default options
+            document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+                const label = radio.closest('.radio-label');
+                if (label) {
+                    label.classList.add('selected');
+                }
+            });
+        }
     }
 
     static closeAccordion() {

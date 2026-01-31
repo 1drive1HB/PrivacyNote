@@ -7,6 +7,31 @@
 
 ---
 
+## Documentation Structure
+
+### Comprehensive Documentation (private/docs/)
+
+For detailed information, refer to the consolidated documentation:
+
+| Document | Description |
+|----------|-------------|
+| **README.md** | Project overview, quick start, and links to all documentation |
+| **APPLICATION_GUIDE.md** | Complete application flow, configuration system, note creation/viewing process, and troubleshooting |
+| **ARCHITECTURE.md** | System architecture, data flow, encryption details, and technology stack |
+| **SECURITY.md** | Security audit (A+ grade), attack protection matrix, delete policy analysis, compliance status |
+| **supabase.md** | Database schema, RLS policies, functions, triggers, pg_cron, testing and monitoring |
+| **Github.md** | GitHub Actions deployment, secrets management, CI/CD pipeline, and Turnstile configuration |
+
+**Quick Navigation:**
+- **Getting Started:** See `private/docs/README.md`
+- **Understanding the Flow:** See `private/docs/APPLICATION_GUIDE.md`
+- **Security Details:** See `private/docs/SECURITY.md`
+- **Database Schema:** See `private/docs/supabase.md`
+
+---
+
+---
+
 ## Architecture Overview
 
 ### Technology Stack
@@ -60,7 +85,8 @@ MAT_PrivN_Project/
 │       │   ├── note.service.js     # Note creation/viewing orchestration
 │       │   ├── supabase.js         # Supabase client initialization
 │       │   ├── turnstile.js        # Cloudflare Turnstile integration
-│       │   └── whatsappUI.js       # WhatsApp sharing feature
+│       │   ├── whatsappUI.js       # WhatsApp sharing feature
+│       │   └── signalUI.js         # Signal sharing feature
 │       ├── utils/
 │       │   ├── customErrors.js     # Custom error classes with user-friendly messages
 │       │   ├── inputSanitizer.js   # Input validation and sanitization
@@ -150,7 +176,7 @@ MAT_PrivN_Project/
 **Initialization Flow:**
 1. `initializeElements()` - Cache DOM references
 2. `initializeSettings()` - Load settings accordion
-3. `initializeServices()` - Init WhatsApp + Turnstile
+3. `initializeServices()` - Init WhatsApp + Signal + Turnstile
 4. `setupEventListeners()` - Bind UI events
 5. `loadDraftNote()` - Restore localStorage draft
 
@@ -223,6 +249,26 @@ MAT_PrivN_Project/
 - Auto-formats share message
 - Fallback URL handling
 
+#### `src/js/services/signalUI.js`
+**Purpose:** Signal sharing functionality
+
+**Features:**
+- Copies message to clipboard
+- Opens Signal app via `sgnl://` deep link
+- Fallback handling for desktop browsers
+- Responsive button layout (side-by-side on desktop, stacked on mobile)
+
+**Key Methods:**
+- `init()` - Initialize click handler
+- `setupSignalHandler()` - Listen for Signal button clicks
+- `shareViaSignal(url)` - Copy message and open Signal app
+
+**Implementation:**
+- Uses `navigator.clipboard.writeText()` to copy message
+- Attempts `window.open('sgnl://')` to launch Signal
+- Shows feedback "Message copied! Opening Signal..."
+- Styled with Signal blue color (#3a76f0)
+
 ---
 
 ### Actions Layer
@@ -249,8 +295,8 @@ MAT_PrivN_Project/
 **Purpose:** Supabase database operations
 
 **Functions:**
-- `createNote(content, expiresIn, isEncrypted)` - Insert note
-- `getNote(id)` - Retrieve and mark as read
+- `createNote(content, expiresIn, isEncrypted)` - Insert note (without read_count - not in schema)
+- `getNote(id)` - Retrieve note using `get_note_content()` RPC (automatic deletion)
 
 **Database Schema (notes table):**
 ```sql
@@ -259,18 +305,25 @@ MAT_PrivN_Project/
 - is_encrypted: BOOLEAN
 - expires_in_24h: BOOLEAN
 - expires_in_48h: BOOLEAN
-- read_count: INTEGER (0 or 1 only via CHECK constraint)
 - created_at: TIMESTAMP
 - expires_at: TIMESTAMP
+```
+
+**Database Functions:**
+```sql
+- get_note_content(note_id UUID): Atomically retrieves and deletes note (one-time read)
+- delete_expired_notes(): Cron job cleanup (runs every 2 hours)
+- set_note_expiration(): Trigger to set expires_at based on boolean flags
 ```
 
 **Security:**
 - Rate limiting (5 notes/minute client-side)
 - UUID validation (prevents injection)
 - Content length constraint (15KB database limit)
-- Read count constraint (0-1 only)
-- Atomic read-count increment
-- Expiration validation
+- Atomic read-and-delete via database function (prevents race conditions)
+- Delete policy DISABLED (prevents DOS attacks - only functions can delete)
+- Expiration validation via trigger
+- Automatic cleanup via pg_cron
 
 #### `src/js/actions/settingsUI.js`
 **Purpose:** Settings accordion controller
@@ -372,7 +425,7 @@ MAT_PrivN_Project/
 2. Fetch from Supabase
 3. Decrypt if needed
 4. Display content
-5. Delete on server (read_count = 1)
+5. Delete on server (via get_note_content() function)
 
 **Error Handling:**
 - Already read

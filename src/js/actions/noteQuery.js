@@ -40,8 +40,8 @@ export const createNote = async (content, expiresIn, isEncrypted = false) => {
         content: processedContent,
         is_encrypted: isEncrypted,
         expires_in_24h: expiresIn24h,
-        expires_in_48h: expiresIn48h,
-        read_count: 0
+        expires_in_48h: expiresIn48h
+        // read_count removed - column doesn't exist in DB schema
       })
       .select('id, content, is_encrypted, created_at, expires_at')
       .single();
@@ -78,10 +78,10 @@ export const getNote = async (id) => {
     const supabase = await getSupabaseClient();
     if (!supabase) throw new Error('Supabase client not initialized');
 
+    // Use database function for secure one-time read with automatic deletion
+    // This function retrieves the note and deletes it atomically
     const { data: noteData, error: fetchError } = await supabase
-      .from(config.tableName)
-      .select('*')
-      .eq('id', id);
+      .rpc('get_note_content', { note_id: id });
 
     if (fetchError) {
       console.error('Fetch error:', fetchError);
@@ -91,22 +91,15 @@ export const getNote = async (id) => {
       throw new NoteNotFoundError();
     }
 
+    // If function returns empty array, note doesn't exist or was already read
     if (!noteData || noteData.length === 0) {
       throw new NoteNotFoundError();
     }
 
     const note = noteData[0];
 
-    if (note.read_count > 0) {
-      throw new NoteAlreadyReadError();
-    }
-
-    if (new Date(note.expires_at) < new Date()) {
-      throw new NoteExpiredError();
-    }
-
+    // Decrypt content if needed
     let content = note.content;
-
     if (note.is_encrypted) {
       try {
         content = await decryptData(note.content, true);
@@ -118,18 +111,14 @@ export const getNote = async (id) => {
       content = await decryptData(note.content, false);
     }
 
-    const { error: updateError } = await supabase
-      .from(config.tableName)
-      .update({ read_count: 1 })
-      .eq('id', id);
-
-    if (updateError) {
-      console.error('Error marking as read:', updateError);
-    }
-
+    // Note: The note is already deleted by the get_note_content() function
+    // No need for manual DELETE or read_count update
+    
     return {
       content: content,
-      markAsRead: async () => { }
+      markAsRead: async () => { 
+        // No-op: already deleted by database function
+      }
     };
 
   } catch (error) {

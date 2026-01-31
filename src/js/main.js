@@ -3,6 +3,7 @@ import { DomService } from './services/dom.service.js';
 import { NoteService } from './services/note.service.js';
 import { SettingsUI } from './actions/settingsUI.js';
 import { WhatsAppUI } from './services/whatsappUI.js';
+import { SignalUI } from './services/signalUI.js';
 import { TurnstileService } from './services/turnstile.js';
 import { RateLimiter } from './utils/rateLimiter.js';
 import { InputSanitizer } from './utils/inputSanitizer.js';
@@ -92,6 +93,9 @@ class PrivacyNoteApp {
     async initializeServices() {
         // Initialize WhatsApp sharing
         WhatsAppUI.init();
+        
+        // Initialize Signal sharing
+        SignalUI.init();
 
         // Initialize Turnstile
         await TurnstileService.init();
@@ -168,6 +172,11 @@ class PrivacyNoteApp {
 
             NoteService.displayNoteLink(url, this.elements);
             DomService.showFeedback(this.elements.copyFeedback, 'Secure note created successfully!', 'success');
+
+            // Auto-close settings accordion after note creation
+            if (this.settingsLoaded) {
+                SettingsUI.closeAccordion();
+            }
 
             localStorage.removeItem('privacyNote_draft');
 

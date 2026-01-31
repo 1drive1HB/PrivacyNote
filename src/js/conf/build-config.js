@@ -17,7 +17,7 @@ const key = "pn_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
 const secrets = {
   supabaseUrl: process.env.SUPABASE_URL || '',
   supabaseKey: process.env.SUPABASE_KEY || '',
-  tableName: process.env.SUPABASE_TABLE_M || 'notes',
+  tableName: process.env.SUPABASE_TABLE_M || '',
   cfTr: process.env.CF_TR || '',
   encryptionKey: process.env.ENCRYPTION_KEY || ''
 };

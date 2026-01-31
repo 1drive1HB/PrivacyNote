@@ -11,6 +11,6 @@ Each note is deleted after the first successful read.
 - One-time read behavior with server-side deletion after viewing
 - Configurable expiration (\(24\) hours or \(48\) hours)
 - Responsive UI with dark mode support
-- Quick sharing via copy link or WhatsApp
+- Quick sharing via copy link, WhatsApp, or Signal
 - Bot protection via Cloudflare Turnstile
 - No tracking: no cookies, analytics, or personal data collection

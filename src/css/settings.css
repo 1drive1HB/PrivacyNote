@@ -11,15 +11,26 @@
 .accordion-header {
   padding: 1.25rem;
   cursor: pointer;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.75rem;
   font-weight: 600;
   color: var(--text, #1e293b);
   transition: all 0.2s ease;
   background: var(--header-bg, #f1f5f9);
-  /* user-select: none; */
-  /* Prevent text selection */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.header-icon {
+  color: var(--primary, #2563eb);
+  font-size: 1.1rem;
+}
+
+.header-text {
+  text-align: center;
+  flex: 1;
 }
 
 .accordion-header:hover {

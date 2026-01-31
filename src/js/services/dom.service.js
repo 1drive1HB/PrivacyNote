@@ -37,12 +37,13 @@ export class DomService {
     try {
       await navigator.clipboard.writeText(text);
       if (feedbackElement) {
-        this.showFeedback(feedbackElement, '✅ Copied to clipboard!', 'success');
+        this.showFeedback(feedbackElement, 'Copied to clipboard!', 'success');
+        //this.showFeedback(feedbackElement, '✅ Copied to clipboard!', 'success');
       }
       return true;
     } catch (err) {
       if (feedbackElement) {
-        this.showFeedback(feedbackElement, '❌ Failed to copy', 'error');
+        this.showFeedback(feedbackElement, 'Failed to copy', 'error');
       }
       return false;
     }

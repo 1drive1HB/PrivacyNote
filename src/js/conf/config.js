@@ -84,7 +84,7 @@ export const initializeConfig = async () => {
         config._setConfig({
           supabaseUrl: window.__ENV.SUPABASE_URL || '',
           supabaseKey: window.__ENV.SUPABASE_KEY || '',
-          tableName: window.__ENV.SUPABASE_TABLE_M || 'notes',
+          tableName: window.__ENV.SUPABASE_TABLE_M || '',
           cfTr: window.__ENV.CF_TR || '',
           encryptionKey: window.__ENV.ENCRYPTION_KEY || '',
           isProduction: !isLocalhost

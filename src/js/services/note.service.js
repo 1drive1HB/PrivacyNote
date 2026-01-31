@@ -133,6 +133,7 @@ export class NoteService {
   static handleViewError(error) {
     this.hideLoading();
     this.hideNoteContent();
+    this.hideNoteMeta();
 
     const parsedError = parseError(error);
     
@@ -163,6 +164,7 @@ export class NoteService {
     this.hideLoading();
     this.hideNoteContent();
     this.hideInfo();
+    this.hideNoteMeta();
 
     const errorContainer = DomService.getElement('errorContainer');
     const errorMessage = DomService.getElement('errorMessage');
@@ -206,6 +208,13 @@ export class NoteService {
     const infoContainer = DomService.getElement('infoContainer');
     if (infoContainer) {
       infoContainer.classList.add('hidden');
+    }
+  }
+
+  static hideNoteMeta() {
+    const noteMeta = DomService.getElement('noteMeta');
+    if (noteMeta) {
+      noteMeta.style.display = 'none';
     }
   }
 

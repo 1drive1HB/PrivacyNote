@@ -258,8 +258,25 @@
   }
 }
 
+/* Tablet and small desktop: stack vertically */
+@media (min-width: 769px) and (max-width: 900px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .setting-group {
+    padding: 1.5rem;
+  }
+
+  .radio-label {
+    min-height: 64px;
+    padding: 1rem 1.25rem;
+  }
+}
+
 /* Desktop specific improvements */
-@media (min-width: 769px) {
+@media (min-width: 901px) {
   .settings-grid {
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;

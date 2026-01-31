@@ -1,17 +1,37 @@
 /* ===== NOTE PAGE STYLES ===== */
 .note-content-area {
-  background: var(--card-bg);
+  background: #ffffff;
   border: 2px solid var(--border);
   border-radius: 8px;
   padding: 1.5rem;
-  min-height: 200px;
+  min-height: 150px;
+  max-height: 400px;
+  overflow-y: auto;
   font-size: 1rem;
   line-height: 1.6;
-  color: var(--text);
+  color: #000000;
   white-space: pre-wrap;
   word-wrap: break-word;
   width: 100%;
   transition: all 0.3s ease;
+}
+
+/* Dark mode note content */
+@media (prefers-color-scheme: dark) {
+  .note-content-area {
+    background: #ffffff;
+    color: #000000;
+  }
+}
+
+/* Loading state inside note content */
+.note-content-area .loading {
+  color: #666666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 150px;
 }
 
 .note-meta {
@@ -186,18 +206,34 @@
   background: #cbd5e0;
 }
 
+/* Make note page content stretch so Back link can sit above footer */
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#noteContentSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 /* ===== BACK LINK ===== */
 .back-link {
   text-align: center;
-  margin: 2rem 0 1rem;
+  margin-top: auto; /* pushes it to the bottom of the card, above the footer */
+  margin-bottom: 0.75rem;
+  padding-top: 1rem;
   width: 100%;
 }
 
 .home-link {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 2.5rem;
   background: var(--primary);
   color: white;
   text-decoration: none;
@@ -205,6 +241,15 @@
   font-weight: 600;
   transition: all 0.3s ease;
   min-height: 44px;
+  min-width: 280px;
+}
+
+/* Desktop: wider button */
+@media (min-width: 769px) {
+  .home-link {
+    min-width: 320px;
+    padding: 0.875rem 3rem;
+  }
 }
 
 .home-link:hover {
@@ -285,6 +330,11 @@
 
   .note-buttons {
     flex-direction: column;
+  }
+
+  .back-link {
+    margin-bottom: 0.5rem;
+    padding-top: 0.75rem;
   }
 
   .home-link {

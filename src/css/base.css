@@ -28,6 +28,8 @@ body {
   color: var(--text); 
   min-height: 100vh;
   line-height: 1.6;
+  display: flex;
+  flex-direction: column;
 }
 
 .container {
@@ -37,6 +39,10 @@ body {
   background: var(--card-bg);
   border-radius: 12px; 
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .header { 
@@ -81,7 +87,7 @@ h1 {
 }
 
 .footer {
-  margin-top: 3rem;
+  margin-top: auto;
   padding-top: 1.5rem;
   border-top: 1px solid var(--border);
 }

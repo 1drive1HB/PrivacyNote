@@ -84,10 +84,12 @@ export const getNote = async (id) => {
       .rpc('get_note_content', { note_id: id });
 
     if (fetchError) {
-      console.error('Fetch error:', fetchError);
       if (fetchError.message?.includes('fetch') || fetchError.code === 'PGRST301') {
+        console.error('[NoteQuery] Network error:', fetchError);
         throw new NetworkError('Unable to retrieve note from database');
       }
+      // Database returned error - likely note doesn't exist
+      console.log('[NoteQuery] Note not found in database');
       throw new NoteNotFoundError();
     }
 
@@ -104,7 +106,7 @@ export const getNote = async (id) => {
       try {
         content = await decryptData(note.content, true);
       } catch (decryptError) {
-        console.error('Decryption failed:', decryptError);
+        console.error('[NoteQuery] Decryption failed:', decryptError);
         throw new DecryptionError();
       }
     } else {
@@ -122,13 +124,21 @@ export const getNote = async (id) => {
     };
 
   } catch (error) {
+    // Expected errors (note not found, already read, expired) - log as info
+    if (error instanceof NoteNotFoundError || 
+        error instanceof NoteAlreadyReadError || 
+        error instanceof NoteExpiredError ||
+        error.message.includes('already been read') ||
+        error.message.includes('expired') ||
+        error.message.includes('not found')) {
+      console.log('[NoteQuery] Note retrieval:', error.userMessage || error.message);
+      throw error;
+    }
+
+    // Unexpected errors - log as error
     console.error('[NoteQuery] Error retrieving note:', error);
 
-    // Re-throw specific errors for proper handling
-    if (error.message.includes('already been read') ||
-      error.message.includes('expired') ||
-      error.message.includes('not found') ||
-      error.message.includes('Unable to decrypt')) {
+    if (error.message.includes('Unable to decrypt')) {
       throw error;
     }
 

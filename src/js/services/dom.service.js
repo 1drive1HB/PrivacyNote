@@ -35,16 +35,67 @@ export class DomService {
 
   static async copyToClipboard(text, feedbackElement = null) {
     try {
-      await navigator.clipboard.writeText(text);
-      if (feedbackElement) {
-        this.showFeedback(feedbackElement, 'Copied to clipboard!', 'success');
-        //this.showFeedback(feedbackElement, '✅ Copied to clipboard!', 'success');
+      // Try modern Clipboard API first (works on HTTPS)
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+        if (feedbackElement) {
+          this.showFeedback(feedbackElement, 'Copied to clipboard!', 'success');
+        }
+        return true;
       }
-      return true;
+      
+      // Fallback for Android/older browsers using textarea trick
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      
+      // Critical for mobile: make it visible but off-screen
+      textArea.style.position = 'absolute';
+      textArea.style.left = '-9999px';
+      textArea.style.top = '0';
+      textArea.style.width = '1px';
+      textArea.style.height = '1px';
+      textArea.style.opacity = '0';
+      textArea.setAttribute('readonly', '');
+      textArea.contentEditable = true;
+      
+      document.body.appendChild(textArea);
+      
+      // Mobile-specific selection
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (isIOS) {
+        const range = document.createRange();
+        range.selectNodeContents(textArea);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        textArea.setSelectionRange(0, 999999);
+      } else {
+        // Android
+        textArea.select();
+        textArea.setSelectionRange(0, 999999);
+      }
+      
+      let successful = false;
+      try {
+        successful = document.execCommand('copy');
+      } catch (e) {
+        console.error('execCommand failed:', e);
+        successful = false;
+      }
+      
+      document.body.removeChild(textArea);
+      
+      if (successful) {
+        if (feedbackElement) {
+          this.showFeedback(feedbackElement, 'Copied to clipboard!', 'success');
+        }
+        return true;
+      } else {
+        throw new Error('Copy command failed');
+      }
     } catch (err) {
-      if (feedbackElement) {
-        this.showFeedback(feedbackElement, 'Failed to copy', 'error');
-      }
+      console.error('Copy failed:', err);
+      // Don't show error message here - let caller handle it
       return false;
     }
   }

@@ -75,6 +75,7 @@ export class DecryptionError extends NoteError {
   }
 }
 
+// NOTE: ValidationError currently unused but kept for future validation error handling
 export class ValidationError extends NoteError {
   constructor(message, userMessage) {
     super(

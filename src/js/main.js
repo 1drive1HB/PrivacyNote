@@ -126,10 +126,16 @@ class PrivacyNoteApp {
 
     autoSaveNote() {
         const content = this.elements.noteText.value;
-        if (content.trim()) {
-            localStorage.setItem('privacyNote_draft', content);
-        } else {
-            localStorage.removeItem('privacyNote_draft');
+        
+        // Only auto-save on localhost (dev mode)
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        if (isLocalhost) {
+            if (content.trim()) {
+                localStorage.setItem('privacyNote_draft', content);
+            } else {
+                localStorage.removeItem('privacyNote_draft');
+            }
         }
 
         // Update character counter
@@ -137,10 +143,18 @@ class PrivacyNoteApp {
     }
 
     loadDraftNote() {
-        const draft = localStorage.getItem('privacyNote_draft');
-        if (draft && this.elements.noteText) {
-            this.elements.noteText.value = draft;
-            DomService.updateCharacterCounter(draft.length);
+        // Only load draft on localhost (dev mode)
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        
+        if (isLocalhost) {
+            const draft = localStorage.getItem('privacyNote_draft');
+            if (draft && this.elements.noteText) {
+                this.elements.noteText.value = draft;
+                DomService.updateCharacterCounter(draft.length);
+            }
+        } else {
+            // Production: Clear any existing draft on page load
+            localStorage.removeItem('privacyNote_draft');
         }
     }
 

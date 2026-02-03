@@ -62,6 +62,7 @@ export class InputSanitizer {
 
   /**
    * Escape HTML entities to prevent XSS
+   * NOTE: Currently unused but kept for future XSS prevention needs
    */
   static escapeHTML(text) {
     if (typeof text !== 'string') {
@@ -75,6 +76,7 @@ export class InputSanitizer {
 
   /**
    * Validate URL for safe display
+   * NOTE: Currently unused but kept for future URL validation needs
    */
   static validateURL(url) {
     try {

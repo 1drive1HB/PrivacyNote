@@ -46,11 +46,58 @@ export class NoteService {
     elements.noteLink.textContent = url;
     elements.noteLink.setAttribute('data-url', url);
 
-    elements.noteLink.onclick = () => DomService.copyToClipboard(url, elements.copyFeedback);
+    // Handle both click and touch events for Android compatibility
+    const copyHandler = async (e) => {
+      e.preventDefault();
+      
+      // Try copy first
+      const success = await DomService.copyToClipboard(url, elements.copyFeedback);
+      
+      // If copy fails on mobile, offer share instead
+      if (!success && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: 'Secure Note Link',
+              text: url
+            });
+            DomService.showFeedback(elements.copyFeedback, 'Link shared!', 'success');
+          } catch (err) {
+            if (err.name !== 'AbortError') {
+              console.error('Share failed:', err);
+            }
+          }
+        }
+      }
+    };
+    
+    elements.noteLink.onclick = copyHandler;
+    elements.noteLink.ontouchend = copyHandler;
 
+    // Set data-url on all share buttons
     if (elements.whatsappBtn) {
       elements.whatsappBtn.setAttribute('data-url', url);
     }
+    
+    const shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) {
+      shareBtn.setAttribute('data-url', url);
+    }
+    
+    const signalBtn = document.getElementById('signalBtn');
+    if (signalBtn) {
+      signalBtn.setAttribute('data-url', url);
+    }
+
+    // Auto-copy link when created
+    setTimeout(async () => {
+      const success = await DomService.copyToClipboard(url, elements.copyFeedback);
+      
+      // If auto-copy fails on mobile (HTTP), just show info message
+      if (!success && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        DomService.showFeedback(elements.copyFeedback, 'Tap link to copy or share', 'info');
+      }
+    }, 100);
   }
 
   static async viewNote() {

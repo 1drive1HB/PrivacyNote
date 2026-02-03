@@ -5,6 +5,14 @@
 
 **Live Demo:** https://1drive1hb.github.io/PrivacyNote/
 
+**Last Updated:** 2026-02-03
+**Database Schema:** `apinotes` (migrated from `public`)
+**Recent Changes:**
+- Migrated to `apinotes` schema for better isolation
+- Fixed Signal mobile fallback (native share sheet instead of alert popup)
+- Enhanced security with dedicated schema namespace
+- Improved mobile sharing UX
+
 ---
 
 ## Documentation Structure
@@ -182,8 +190,14 @@ MAT_PrivN_Project/
 
 **Key Methods:**
 - `handleCreateNote()` - Note creation workflow
-- `autoSaveNote()` - Draft persistence
+- `autoSaveNote()` - Draft persistence (localhost only - disabled in production)
+- `loadDraftNote()` - Restore draft (localhost only - clears draft in production)
 - `handleClear()` - Reset form
+
+**Draft Persistence Behavior:**
+- **Development (localhost):** Auto-saves draft to localStorage, restores on page load
+- **Production (github.io):** Auto-save disabled, draft cleared on page load/refresh
+- Prevents accidental data retention in production environment
 
 **Security:**
 - Rate limit cleanup on init
@@ -214,8 +228,17 @@ MAT_PrivN_Project/
 
 **Configuration:**
 - Disables session persistence
-- Uses public schema
+- Uses `apinotes` schema (configured in db.schema property)
 - Lazy initialization pattern
+
+**Schema Configuration:**
+```javascript
+db: {
+  schema: 'apinotes'  // Isolated schema for security
+}
+```
+
+**Important:** Ensure `apinotes` schema is exposed in Supabase Dashboard → Project Settings → API → Exposed Schemas
 
 #### `src/js/services/dom.service.js`
 **Purpose:** DOM manipulation utilities (stateless)
@@ -224,8 +247,14 @@ MAT_PrivN_Project/
 - `getElement(id)` - Safe element retrieval
 - `toggleButtonState()` - Loading states
 - `showFeedback()` - Toast notifications
-- `copyToClipboard()` - Async clipboard API
+- `copyToClipboard()` - Async clipboard API with Android fallback
 - `updateCharacterCounter()` - Character count display
+
+**Clipboard Implementation:**
+- **Primary method:** Modern `navigator.clipboard.writeText()` API
+- **Fallback method:** Legacy `document.execCommand('copy')` for Android/older browsers
+- Creates hidden textarea → Selects text → Copies → Removes textarea
+- Ensures clipboard works on all mobile devices (Android, iOS, old browsers)
 
 #### `src/js/services/turnstile.js`
 **Purpose:** Cloudflare Turnstile integration
@@ -250,24 +279,49 @@ MAT_PrivN_Project/
 - Fallback URL handling
 
 #### `src/js/services/signalUI.js`
-**Purpose:** Signal sharing functionality
+**Purpose:** Platform-aware sharing service with separate mobile/desktop functionality
 
 **Features:**
-- Copies message to clipboard
-- Opens Signal app via `sgnl://` deep link
-- Fallback handling for desktop browsers
-- Responsive button layout (side-by-side on desktop, stacked on mobile)
+- **Mobile:** Universal "Share" button (grey #6b7280) using native share sheet
+- **Desktop:** Signal-specific button (blue #3a76f0) with `sgnl://` deep link
+- Platform detection - auto-shows correct button based on device
+- URL validation - ensures share button URL matches link container (Android bug detection)
+- Copies message to clipboard before sharing
+- Red error notification on "Share cancelled" (not transparent)
 
 **Key Methods:**
-- `init()` - Initialize click handler
-- `setupSignalHandler()` - Listen for Signal button clicks
-- `shareViaSignal(url)` - Copy message and open Signal app
+- `init()` - Detect platform and show/hide appropriate buttons
+- `setupHandlers()` - Listen for both shareBtn and signalBtn clicks
+- `mobileShare(url)` - Universal share via native share sheet
+- `desktopSignal(url)` - Signal-specific deep link
+
+**Mobile Behavior (Android/iOS) - "Share" button:**
+1. Button shows: "Share" (grey, with share-alt icon)
+2. Click → Validates URL matches link container
+3. Copies message to clipboard
+4. Opens native share sheet (`navigator.share`)
+5. User picks any app (Signal, WhatsApp, Telegram, SMS, email, etc.)
+6. Feedback: "Opening share options..." → "Shared successfully!" (green) OR "Share cancelled" (RED)
+
+**Desktop Behavior - "Share via Signal" button:**
+1. Button shows: "Share via Signal" (blue, with Signal icon)
+2. Click → Validates URL matches link container
+3. Copies message to clipboard
+4. Tries to open Signal desktop app (`sgnl://`)
+5. Fallback: Opens Signal download page if app not found
+6. Green feedback: "Message copied! Opening Signal..."
+
+**URL Validation (Android Bug Fix):**
+- Compares share button URL with `noteLink.getAttribute('data-url')`
+- If mismatch detected → Red error: "⚠️ URL mismatch detected! Please refresh and try again."
+- Logs mismatch to console for debugging
 
 **Implementation:**
-- Uses `navigator.clipboard.writeText()` to copy message
-- Attempts `window.open('sgnl://')` to launch Signal
-- Shows feedback "Message copied! Opening Signal..."
-- Styled with Signal blue color (#3a76f0)
+- Platform detection via `navigator.userAgent`
+- Dynamic button visibility (mobile shows shareBtn, desktop shows signalBtn)
+- Web Share API (`navigator.share`) for mobile
+- Deep link (`sgnl://`) for desktop Signal app
+- Styled: Mobile grey (#6b7280), Desktop Signal blue (#3a76f0)
 
 ---
 
@@ -298,7 +352,7 @@ MAT_PrivN_Project/
 - `createNote(content, expiresIn, isEncrypted)` - Insert note (without read_count - not in schema)
 - `getNote(id)` - Retrieve note using `get_note_content()` RPC (automatic deletion)
 
-**Database Schema (notes table):**
+**Database Schema (apinotes.notes table):**
 ```sql
 - id: UUID (primary key)
 - content: TEXT (max 15KB via CHECK constraint)
@@ -309,11 +363,11 @@ MAT_PrivN_Project/
 - expires_at: TIMESTAMP
 ```
 
-**Database Functions:**
+**Database Functions (apinotes schema):**
 ```sql
-- get_note_content(note_id UUID): Atomically retrieves and deletes note (one-time read)
-- delete_expired_notes(): Cron job cleanup (runs every 2 hours)
-- set_note_expiration(): Trigger to set expires_at based on boolean flags
+- apinotes.get_note_content(note_id UUID): Atomically retrieves and deletes note (one-time read)
+- apinotes.delete_expired_notes(): Cron job cleanup (runs every 2 hours)
+- apinotes.set_note_expiration(): Trigger to set expires_at based on boolean flags
 ```
 
 **Security:**
@@ -362,6 +416,10 @@ MAT_PrivN_Project/
 - Blocks: `<script>`, `javascript:`, `onclick=`, `<iframe>`, etc.
 - Detects: Repeated chars (>50), excessive newlines (>500)
 
+**Unused Methods (kept for future use):**
+- `escapeHTML()` - XSS prevention helper
+- `validateURL()` - URL validation helper
+
 #### `src/js/utils/customErrors.js`
 **Purpose:** Custom error classes with user-friendly messages
 
@@ -372,7 +430,7 @@ MAT_PrivN_Project/
 - `NoteAlreadyReadError` - Note has been read (one-time read)
 - `NoteExpiredError` - Note expired based on time limit
 - `DecryptionError` - Failed to decrypt note content
-- `ValidationError` - Invalid input validation
+- `ValidationError` - Invalid input validation (currently unused, kept for future)
 - `RateLimitError` - Too many requests (includes retryAfter)
 
 **Functions:**
@@ -476,14 +534,14 @@ MAT_PrivN_Project/
 5. initializeConfig() detects no XOR_KEY (dev mode)
 6. Reads from window.__ENV
 7. Deletes window.__ENV (security)
-8. Config ready
+8. Config ready (schema: 'apinotes' set in supabase.js)
 ```
 
 ### Production Mode (GitHub Pages)
 ```
 1. GitHub Actions triggers on push
 2. src/js/conf/build-config.js runs (Node.js)
-3. Reads GitHub Secrets
+3. Reads GitHub Secrets (SUPABASE_URL, SUPABASE_KEY, SUPABASE_TABLE_M, etc.)
 4. Generates unique XOR key
 5. Encrypts all config values
 6. Overwrites src/js/conf/config.js with production version
@@ -491,8 +549,13 @@ MAT_PrivN_Project/
 8. Browser loads encrypted config
 9. initializeConfig() detects XOR_KEY (prod mode)
 10. XOR decrypts values on init
-11. Config ready
+11. Config ready (schema: 'apinotes' set in supabase.js)
 ```
+
+### Schema Configuration
+- **ENV Variable:** `SUPABASE_TABLE_M=notes` (simple table name only)
+- **Schema Setting:** Hardcoded in `src/js/services/supabase.js` as `schema: 'apinotes'`
+- **Rationale:** Schema rarely changes, keeps ENV config simple and clean
 
 ---
 

@@ -92,7 +92,8 @@ button:hover { background: var(--primary-dark); }
 }
 
 .whatsapp-btn,
-.signal-btn {
+.signal-btn,
+.share-btn {
   color: white;
   border: none;
   border-radius: 8px;
@@ -106,12 +107,14 @@ button:hover { background: var(--primary-dark); }
   gap: 0.5rem;
   transition: all 0.2s ease;
   flex: 1 1 0;
-  min-width: 140px;
+  flex-basis: 0;
+  min-width: 0;
   white-space: nowrap;
 }
 
 .whatsapp-btn i,
-.signal-btn i {
+.signal-btn i,
+.share-btn i {
   font-size: 1.2rem;
 }
 
@@ -133,6 +136,16 @@ button:hover { background: var(--primary-dark); }
   transform: translateY(-1px);
 }
 
+/* Mobile: Universal share button (grey/neutral) */
+.share-btn {
+  background: #6b7280;
+}
+
+.share-btn:hover { 
+  background: #4b5563;
+  transform: translateY(-1px);
+}
+
 /* Tablet/narrow desktop breakpoint for share buttons */
 @media (max-width: 600px) {
   .share-buttons {
@@ -141,7 +154,8 @@ button:hover { background: var(--primary-dark); }
   }
   
   .whatsapp-btn,
-  .signal-btn {
+  .signal-btn,
+  .share-btn {
     width: 100%;
     min-width: unset;
   }

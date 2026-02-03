@@ -22,7 +22,7 @@ export const getSupabaseClient = async () => {
             detectSessionInUrl: false
           },
           db: {
-            schema: 'public'
+            schema: 'apinotes'
           }
         }
       );

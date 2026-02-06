@@ -21,7 +21,7 @@ export class NoteService {
       const isEncrypted = Boolean(settings.encryption);
       const expiresIn = settings.expiration === '48h' ? 172800 : 86400;
 
-      const { createNote } = await import('../actions/noteQuery.js');
+      const { createNote } = await import(`${env.basePath}/src/js/actions/noteQuery.js`);
       const newNote = await createNote(content, expiresIn, isEncrypted);
 
       if (!newNote?.id) {
@@ -157,7 +157,8 @@ export class NoteService {
 
   static async getNoteContent(noteId) {
     try {
-      const noteQuery = await import('../actions/noteQuery.js');
+      const env = this.getEnvironment();
+      const noteQuery = await import(`${env.basePath}/src/js/actions/noteQuery.js`);
       const note = await noteQuery.getNote(noteId);
 
       if (note === null) {
